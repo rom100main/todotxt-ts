@@ -27,7 +27,6 @@
         "build": "tsc",
         "dev": "tsc --watch",
         "test": "jest",
-        "example": "ts-node examples/basic-usage.ts",
         "clean": "rm -rf dist"
     },
     "devDependencies": {
