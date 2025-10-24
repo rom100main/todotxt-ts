@@ -144,6 +144,14 @@ export class ExtensionHandler {
             return DateUtils.parseDate(value);
         }
 
+        if (/^-?\d+$/.test(value)) {
+            return parseInt(value, 10);
+        }
+
+        if (/^-?\d*\.\d+$/.test(value)) {
+            return parseFloat(value);
+        }
+
         if (value.includes(",")) {
             return ListUtils.parseList(value);
         }
@@ -158,6 +166,17 @@ export class ExtensionHandler {
 
         if (ListUtils.isList(value)) {
             return ListUtils.serializeList(value);
+        }
+
+        if (value != null && typeof (value as any).toString === "function") {
+            try {
+                const str = (value as any).toString();
+                if (typeof str === "string") {
+                    return str;
+                }
+            } catch {
+                // If toString throws, fall through to fallback
+            }
         }
 
         return String(value);
