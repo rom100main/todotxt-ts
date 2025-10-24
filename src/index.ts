@@ -1,45 +1,61 @@
-import { Priority, Task, TodoTxtExtension, TaskExtensions, ParseOptions, SaveOptions } from './types';
-import { ExtensionHandler } from './extension-handler';
-import { TaskBuilder } from './task';
-import { TodoTxtParser } from './parser';
-import { TodoTxtSerializer } from './serializer';
+import {
+    Priority,
+    Task,
+    TodoTxtExtension,
+    TaskExtensions,
+    TodoOptions,
+    SaveOptions,
+} from "./types";
+import { ExtensionHandler } from "./extension-handler";
+import { TaskBuilder } from "./task";
+import { TodoTxtParser } from "./parser";
+import { TodoTxtSerializer } from "./serializer";
 
-export { Priority, Task, TodoTxtExtension, TaskExtensions, ParseOptions, SaveOptions };
+export { Priority, Task, TodoTxtExtension, TaskExtensions };
 export { ExtensionHandler };
 export { TaskBuilder };
 export { TodoTxtParser };
 export { TodoTxtSerializer };
 
 export class TodoTxt {
-  private parser: TodoTxtParser;
-  private serializer: TodoTxtSerializer;
+    private parser: TodoTxtParser;
+    private serializer: TodoTxtSerializer;
+    private extensionHandler: ExtensionHandler;
 
-  constructor(options?: ParseOptions) {
-    this.parser = new TodoTxtParser(options);
-    this.serializer = new TodoTxtSerializer(this.parser.getExtensionHandler());
-  }
+    constructor(options?: TodoOptions) {
+        this.extensionHandler = new ExtensionHandler(options?.extensions);
+        this.parser = new TodoTxtParser({
+            extensionHandler: this.extensionHandler,
+            handleSubtasks: options?.handleSubtasks,
+        });
+        this.serializer = new TodoTxtSerializer(this.extensionHandler);
+    }
 
-  parse(content: string): Task[] {
-    return this.parser.parseFile(content);
-  }
+    parse(content: string): Task[] {
+        return this.parser.parseFile(content);
+    }
 
-  parseLine(line: string): Task {
-    return this.parser.parseLine(line);
-  }
+    parseLine(line: string): Task {
+        return this.parser.parseLine(line);
+    }
 
-  serialize(tasks: Task[], options?: SaveOptions): string {
-    return this.serializer.serializeTasks(tasks, options);
-  }
+    serialize(tasks: Task[], options?: SaveOptions): string {
+        return this.serializer.serializeTasks(
+            tasks,
+            options?.includeSubtasks,
+            options?.preserveIndentation,
+        );
+    }
 
-  addExtension(extension: TodoTxtExtension): void {
-    this.parser.addExtension(extension);
-  }
+    addExtension(extension: TodoTxtExtension): void {
+        this.extensionHandler.addExtension(extension);
+    }
 
-  removeExtension(key: string): boolean {
-    return this.parser.removeExtension(key);
-  }
+    removeExtension(key: string): boolean {
+        return this.extensionHandler.removeExtension(key);
+    }
 
-  getExtensionHandler(): ExtensionHandler {
-    return this.parser.getExtensionHandler();
-  }
+    getExtensionHandler(): ExtensionHandler {
+        return this.extensionHandler;
+    }
 }
