@@ -69,40 +69,19 @@ export class ExtensionHandler {
                     // merge with parent using list logic
                     const parentValue = extensions[key];
                     if (parentValue !== undefined) {
-                        if (
-                            ListUtils.isList(parentValue) ||
-                            ListUtils.isList(parsedValue)
-                        ) {
-                            const parentList = ListUtils.isList(parentValue)
-                                ? parentValue
-                                : [parentValue];
-                            const currentList = ListUtils.isList(parsedValue)
-                                ? parsedValue
-                                : [parsedValue];
-                            const mergedList = [
-                                ...parentList,
-                                ...currentList,
-                            ].filter(
-                                (item, index, self) =>
-                                    self.indexOf(item) === index,
+                        if (ListUtils.isList(parentValue) || ListUtils.isList(parsedValue)) {
+                            const parentList = ListUtils.isList(parentValue) ? parentValue : [parentValue];
+                            const currentList = ListUtils.isList(parsedValue) ? parsedValue : [parsedValue];
+                            const mergedList = [...parentList, ...currentList].filter(
+                                (item, index, self) => self.indexOf(item) === index,
                             );
-                            extensions[key] =
-                                mergedList.length === 1
-                                    ? mergedList[0]
-                                    : mergedList;
+                            extensions[key] = mergedList.length === 1 ? mergedList[0] : mergedList;
                         } else {
                             // Both are single values, create list
-                            const mergedList = [
-                                parentValue,
-                                parsedValue,
-                            ].filter(
-                                (item, index, self) =>
-                                    self.indexOf(item) === index,
+                            const mergedList = [parentValue, parsedValue].filter(
+                                (item, index, self) => self.indexOf(item) === index,
                             );
-                            extensions[key] =
-                                mergedList.length === 1
-                                    ? mergedList[0]
-                                    : mergedList;
+                            extensions[key] = mergedList.length === 1 ? mergedList[0] : mergedList;
                         }
                     } else {
                         // No parent value, just use current

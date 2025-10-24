@@ -7,21 +7,15 @@ export class TodoTxtParser {
     private handleSubtasks: boolean;
 
     constructor(options?: ParseOptions) {
-        this.extensionHandler = options?.extensionHandler
-            ? options.extensionHandler
-            : new ExtensionHandler();
-        this.handleSubtasks = options?.handleSubtasks
-            ? options.handleSubtasks
-            : true;
+        this.extensionHandler = options?.extensionHandler ? options.extensionHandler : new ExtensionHandler();
+        this.handleSubtasks = options?.handleSubtasks ? options.handleSubtasks : true;
     }
 
     parseFile(content: string): Task[] {
         const lines = content.split("\n").filter((line) => line.trim() !== "");
 
         if (!this.handleSubtasks) {
-            return lines.map((line) =>
-                TaskBuilder.createTask(line, this.extensionHandler),
-            );
+            return lines.map((line) => TaskBuilder.createTask(line, this.extensionHandler));
         }
 
         return this.parseWithSubtasks(lines);
@@ -51,11 +45,7 @@ export class TodoTxtParser {
                     const parent = stack[i];
                     task.parent = parent;
 
-                    const taskWithInheritance = TaskBuilder.createTask(
-                        line,
-                        this.extensionHandler,
-                        parent,
-                    );
+                    const taskWithInheritance = TaskBuilder.createTask(line, this.extensionHandler, parent);
 
                     parent.subtasks.push(taskWithInheritance);
 

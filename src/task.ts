@@ -1,13 +1,9 @@
-import { Task, Priority, TaskExtensions } from "./types";
+import { Task, Priority } from "./types";
 import { ExtensionHandler } from "./extension-handler";
 import { DateUtils } from "./utils";
 
 export class TaskBuilder {
-    static createTask(
-        raw: string,
-        extensionHandler: ExtensionHandler,
-        parent?: Task,
-    ): Task {
+    static createTask(raw: string, extensionHandler: ExtensionHandler, parent?: Task): Task {
         const trimmed = raw.trim();
         const indentLevel = this.getIndentLevel(raw);
 
@@ -32,10 +28,7 @@ export class TaskBuilder {
 
         this.extractProjectsAndContexts(task);
 
-        task.extensions = extensionHandler.parseExtensions(
-            task.description,
-            parent,
-        );
+        task.extensions = extensionHandler.parseExtensions(task.description, parent);
 
         if (parent) {
             this.inheritParentProperties(task, parent);
@@ -71,18 +64,12 @@ export class TaskBuilder {
 
             let remainingParts = parts.slice(2);
 
-            if (
-                remainingParts.length > 0 &&
-                this.isPriority(remainingParts[0])
-            ) {
+            if (remainingParts.length > 0 && this.isPriority(remainingParts[0])) {
                 task.priority = remainingParts[0].slice(1, -1) as Priority;
                 remainingParts = remainingParts.slice(1);
             }
 
-            if (
-                remainingParts.length > 0 &&
-                DateUtils.isDate(remainingParts[0])
-            ) {
+            if (remainingParts.length > 0 && DateUtils.isDate(remainingParts[0])) {
                 task.creationDate = DateUtils.parseDate(remainingParts[0]);
                 remainingParts = remainingParts.slice(1);
             }

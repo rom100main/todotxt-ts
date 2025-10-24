@@ -8,48 +8,25 @@ export class TodoTxtSerializer {
         this.extensionHandler = extensionHandler;
     }
 
-    serializeTasks(
-        tasks: Task[],
-        includeSubtasks: boolean = true,
-        preserveIndentation: boolean = true,
-    ): string {
+    serializeTasks(tasks: Task[], includeSubtasks: boolean = true, preserveIndentation: boolean = true): string {
         const lines: string[] = [];
 
         for (const task of tasks) {
-            lines.push(
-                ...this.serializeTask(
-                    task,
-                    includeSubtasks,
-                    preserveIndentation,
-                ),
-            );
+            lines.push(...this.serializeTask(task, includeSubtasks, preserveIndentation));
         }
 
         return lines.join("\n");
     }
 
-    serializeTask(
-        task: Task,
-        includeSubtasks: boolean = true,
-        preserveIndentation: boolean = true,
-    ): string[] {
+    serializeTask(task: Task, includeSubtasks: boolean = true, preserveIndentation: boolean = true): string[] {
         const lines: string[] = [];
 
-        const line = this.serializeSingleTask(
-            task,
-            preserveIndentation ? task.indentLevel : 0,
-        );
+        const line = this.serializeSingleTask(task, preserveIndentation ? task.indentLevel : 0);
         lines.push(line);
 
         if (includeSubtasks && task.subtasks.length > 0) {
             for (const subtask of task.subtasks) {
-                lines.push(
-                    ...this.serializeTask(
-                        subtask,
-                        includeSubtasks,
-                        preserveIndentation,
-                    ),
-                );
+                lines.push(...this.serializeTask(subtask, includeSubtasks, preserveIndentation));
             }
         }
 
@@ -92,9 +69,7 @@ export class TodoTxtSerializer {
         const extensionRegex = /\s+\w+:[^\s]+/g;
         description = description.replace(extensionRegex, "");
 
-        const extensionParts = this.extensionHandler.serializeExtensions(
-            task.extensions,
-        );
+        const extensionParts = this.extensionHandler.serializeExtensions(task.extensions);
         for (const extPart of extensionParts) {
             description += ` ${extPart}`;
         }

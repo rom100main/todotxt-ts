@@ -39,16 +39,12 @@ describe("TodoTxtParser", () => {
         test("should parse a completed task", () => {
             const task = parser.parseLine("x 2023-10-24 Completed task");
             expect(task.completed).toBe(true);
-            expect(task.completionDate).toEqual(
-                new Date(Date.UTC(2023, 9, 24)),
-            );
+            expect(task.completionDate).toEqual(new Date(Date.UTC(2023, 9, 24)));
             expect(task.description).toBe("Completed task");
         });
 
         test("should parse a task with projects and contexts", () => {
-            const task = parser.parseLine(
-                "Task +Project1 +Project2 @context1 @context2",
-            );
+            const task = parser.parseLine("Task +Project1 +Project2 @context1 @context2");
             expect(task.projects).toEqual(["Project1", "Project2"]);
             expect(task.contexts).toEqual(["context1", "context2"]);
         });
@@ -129,9 +125,7 @@ Another task`;
             expect(subtask.priority).toBeUndefined();
             expect(subtask.projects).toEqual(["Project"]);
             expect(subtask.contexts).toEqual(["home"]);
-            expect(subtask.extensions.due).toEqual(
-                new Date(Date.UTC(2023, 9, 25)),
-            );
+            expect(subtask.extensions.due).toEqual(new Date(Date.UTC(2023, 9, 25)));
         });
     });
 
@@ -147,9 +141,7 @@ Another task`;
         });
 
         test("should parse floats by default", () => {
-            const task = parser.parseLine(
-                "Task rating:4.5 temperature:-2.3 weight:0.75",
-            );
+            const task = parser.parseLine("Task rating:4.5 temperature:-2.3 weight:0.75");
             expect(task.extensions.rating).toBe(4.5);
             expect(task.extensions.temperature).toBe(-2.3);
             expect(task.extensions.weight).toBe(0.75);
@@ -159,15 +151,11 @@ Another task`;
         });
 
         test("should handle mixed numeric types", () => {
-            const task = parser.parseLine(
-                "Task int:42 float:3.14 text:hello date:2023-10-25",
-            );
+            const task = parser.parseLine("Task int:42 float:3.14 text:hello date:2023-10-25");
             expect(task.extensions.int).toBe(42);
             expect(task.extensions.float).toBe(3.14);
             expect(task.extensions.text).toBe("hello");
-            expect(task.extensions.date).toEqual(
-                new Date(Date.UTC(2023, 9, 25)),
-            );
+            expect(task.extensions.date).toEqual(new Date(Date.UTC(2023, 9, 25)));
         });
     });
 
@@ -179,9 +167,7 @@ Another task`;
             const tasks = parser.parseFile(content);
             const child = tasks[0].subtasks[0];
 
-            expect(child.extensions.due).toEqual(
-                new Date(Date.UTC(2023, 9, 25)),
-            );
+            expect(child.extensions.due).toEqual(new Date(Date.UTC(2023, 9, 25)));
             expect(child.extensions.priority).toBe("high");
         });
 
@@ -205,9 +191,7 @@ Another task`;
             const tasks = customParser.parseFile(content);
             const child = tasks[0].subtasks[0];
 
-            expect(child.extensions.due).toEqual(
-                new Date(Date.UTC(2023, 9, 25)),
-            );
+            expect(child.extensions.due).toEqual(new Date(Date.UTC(2023, 9, 25)));
             expect(child.extensions.priority).toBeUndefined();
         });
 

@@ -1,11 +1,4 @@
-import {
-    Priority,
-    Task,
-    TodoTxtExtension,
-    TaskExtensions,
-    TodoOptions,
-    SaveOptions,
-} from "./types";
+import { Priority, Task, TodoTxtExtension, TaskExtensions, TodoOptions, SaveOptions } from "./types";
 import { ExtensionHandler } from "./extension-handler";
 import { TaskBuilder } from "./task";
 import { TodoTxtParser } from "./parser";
@@ -40,11 +33,7 @@ export class TodoTxt {
     }
 
     serialize(tasks: Task[], options?: SaveOptions): string {
-        return this.serializer.serializeTasks(
-            tasks,
-            options?.includeSubtasks,
-            options?.preserveIndentation,
-        );
+        return this.serializer.serializeTasks(tasks, options?.includeSubtasks, options?.preserveIndentation);
     }
 
     addExtension(extension: TodoTxtExtension): void {

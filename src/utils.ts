@@ -23,11 +23,14 @@ export class DateUtils {
 
 export class ListUtils {
     static parseList(value: string): string[] {
-        return value.split(',').map(item => item.trim()).filter(item => item.length > 0);
+        return value
+            .split(",")
+            .map((item) => item.trim())
+            .filter((item) => item.length > 0);
     }
 
     static serializeList(items: string[]): string {
-        return items.join(',');
+        return items.join(",");
     }
 
     static isList(value: any): boolean {

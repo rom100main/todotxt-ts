@@ -1,4 +1,4 @@
-import { TodoTxt, TodoTxtExtension } from "../src/index";
+import { TodoTxt } from "../src/index";
 
 describe("TodoTxtSerializer", () => {
     let todo: TodoTxt;
