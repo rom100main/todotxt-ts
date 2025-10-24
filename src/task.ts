@@ -1,5 +1,5 @@
-import { Task, Priority } from "./types";
 import { ExtensionHandler } from "./extension-handler";
+import { Task, Priority } from "./types";
 import { DateUtils } from "./utils";
 
 export class TaskBuilder {

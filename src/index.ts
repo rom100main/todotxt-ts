@@ -1,8 +1,8 @@
-import { Priority, Task, TodoTxtExtension, TaskExtensions, TodoOptions, SaveOptions } from "./types";
 import { ExtensionHandler } from "./extension-handler";
-import { TaskBuilder } from "./task";
 import { TodoTxtParser } from "./parser";
 import { TodoTxtSerializer } from "./serializer";
+import { TaskBuilder } from "./task";
+import { Priority, Task, TodoTxtExtension, TaskExtensions, TodoOptions, SaveOptions } from "./types";
 
 export { Priority, Task, TodoTxtExtension, TaskExtensions };
 export { ExtensionHandler };

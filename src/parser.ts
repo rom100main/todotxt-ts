@@ -1,6 +1,6 @@
-import { Task, ParseOptions } from "./types";
 import { ExtensionHandler } from "./extension-handler";
 import { TaskBuilder } from "./task";
+import { Task, ParseOptions } from "./types";
 
 export class TodoTxtParser {
     private extensionHandler: ExtensionHandler;

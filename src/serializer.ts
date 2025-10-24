@@ -1,5 +1,5 @@
-import { Task } from "./types";
 import { ExtensionHandler } from "./extension-handler";
+import { Task } from "./types";
 
 export class TodoTxtSerializer {
     private extensionHandler: ExtensionHandler;
