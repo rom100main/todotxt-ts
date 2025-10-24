@@ -6,9 +6,7 @@
         "todo",
         "todotxt",
         "parser",
-        "typescript",
-        "task",
-        "productivity"
+        "typescript"
     ],
     "homepage": "https://github.com/rom100main/todotxt-ts#readme",
     "bugs": {
@@ -20,7 +18,7 @@
     },
     "license": "MIT",
     "author": "rom100main",
-    "type": "commonjs",
+    "type": "module",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "scripts": {
@@ -28,8 +26,8 @@
         "dev": "tsc --watch",
         "test": "jest",
         "clean": "rm -rf dist",
-        "lint": "eslint . --ext .ts,.cjs",
-        "lint:fix": "eslint . --ext .ts,.cjs --fix"
+        "lint": "eslint . --ext .ts,.js",
+        "lint:fix": "eslint . --ext .ts,.js --fix"
     },
     "devDependencies": {
         "@types/jest": "^29.5.0",
