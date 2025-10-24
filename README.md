@@ -4,12 +4,12 @@ A comprehensive TypeScript parser for todo.txt format files with extension suppo
 
 ## Features
 
-- Full todo.txt format compliance
-- Extension support with custom parsing and serializing functions
+- Parse and serialize todo.txt format (priorities, dates, projects, contexts)
+- Custom key:value extensions with automatic type parsing
 - Subtask support with indentation-based hierarchy
-- Parent value inheritance for subtasks
-- Serialization back to todo.txt format
-- TypeScript support with full type definitions
+- Property inheritance from parent to subtasks
+- Extension inheritance control (inherit, shadow)
+- Full TypeScript support
 
 ## Installation
 
@@ -33,7 +33,8 @@ const todo = new TodoTxt({
         const day = String(date.getDate()).padStart(2, '0');
         return `${year}-${month}-${day}`;
       },
-      inheritShadow: true
+      inherit: true,
+      shadow: true
     }
   ]
 });
@@ -96,11 +97,16 @@ interface Task {
 ### TodoTxtExtension
 
 ```typescript
-interface TodoTxtExtension {
-  key: string;                                   // Extension key (e.g., 'due')
-  parsingFunction?: (value: string) => any;      // Custom parser
-  serializingFunction?: (value: any) => string;  // Custom serializer
-  inheritShadow: boolean;                        // true = don't inherit from parent
+interface interface TodoTxtExtension<T extends Serializable = Serializable> {
+  key: string;                                 // Extension key (e.g., 'due')
+  parsingFunction?: (value: string) => T;      // Custom parser
+  serializingFunction?: (value: T) => string;  // Custom serializer
+  inherit?: boolean;                           // Inherit by subtasks (default: true)
+  shadow?: boolean;                            // Override parent value (default: false)
+}
+
+interface Serializable {
+    toString(): string;
 }
 ```
 
@@ -135,9 +141,6 @@ npm run build
 
 # Run tests
 npm test
-
-# Run example
-npm run example
 ```
 
 ## License
