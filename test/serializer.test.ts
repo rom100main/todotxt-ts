@@ -35,7 +35,8 @@ describe("TodoTxtSerializer", () => {
         todo.addExtension({
             key: "due",
             parsingFunction: (value: string) => new Date(value),
-            inheritShadow: false,
+            inherit: false,
+            shadow: true,
         });
 
         const task = todo.parseLine("Task due:2023-10-25");
@@ -48,7 +49,8 @@ describe("TodoTxtSerializer", () => {
             key: "estimate",
             parsingFunction: (value: string) => parseInt(value),
             serializingFunction: (value: number) => `${value}h`,
-            inheritShadow: false,
+            inherit: false,
+            shadow: true,
         });
 
         const task = todo.parseLine("Task estimate:2");

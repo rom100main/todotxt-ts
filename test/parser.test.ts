@@ -25,21 +25,23 @@ describe("TodoTxtParser", () => {
 
         test("should parse a task with creation date", () => {
             const task = parser.parseLine("2023-10-24 Task with date");
-            expect(task.creationDate).toEqual(new Date(2023, 9, 24));
+            expect(task.creationDate).toEqual(new Date(Date.UTC(2023, 9, 24)));
             expect(task.description).toBe("Task with date");
         });
 
         test("should parse a task with priority and creation date", () => {
             const task = parser.parseLine("(B) 2023-10-24 Task with both");
             expect(task.priority).toBe("B");
-            expect(task.creationDate).toEqual(new Date(2023, 9, 24));
+            expect(task.creationDate).toEqual(new Date(Date.UTC(2023, 9, 24)));
             expect(task.description).toBe("Task with both");
         });
 
         test("should parse a completed task", () => {
             const task = parser.parseLine("x 2023-10-24 Completed task");
             expect(task.completed).toBe(true);
-            expect(task.completionDate).toEqual(new Date(2023, 9, 24));
+            expect(task.completionDate).toEqual(
+                new Date(Date.UTC(2023, 9, 24)),
+            );
             expect(task.description).toBe("Completed task");
         });
 
@@ -56,7 +58,7 @@ describe("TodoTxtParser", () => {
         test("should parse extensions without custom parser", () => {
             const task = parser.parseLine("Task due:2023-10-25 priority:high");
             expect(task.extensions).toEqual({
-                due: "2023-10-25",
+                due: new Date(Date.UTC(2023, 9, 25)),
                 priority: "high",
             });
         });
@@ -66,7 +68,8 @@ describe("TodoTxtParser", () => {
             extensionHandler.addExtension({
                 key: "due",
                 parsingFunction: (value: string) => new Date(value),
-                inheritShadow: false,
+                inherit: false,
+                shadow: true,
             });
             parser = new TodoTxtParser({ extensionHandler: extensionHandler });
 
@@ -91,7 +94,8 @@ describe("TodoTxtParser", () => {
                     return parseInt(value);
                 },
                 serializingFunction: (hours: number) => `${hours}h`,
-                inheritShadow: false,
+                inherit: false,
+                shadow: true,
             });
             parser = new TodoTxtParser({ extensionHandler: extensionHandler });
 
@@ -125,7 +129,9 @@ Another task`;
             expect(subtask.priority).toBeUndefined();
             expect(subtask.projects).toEqual(["Project"]);
             expect(subtask.contexts).toEqual(["home"]);
-            expect(subtask.extensions.due).toBe("2023-10-25");
+            expect(subtask.extensions.due).toEqual(
+                new Date(Date.UTC(2023, 9, 25)),
+            );
         });
     });
 
