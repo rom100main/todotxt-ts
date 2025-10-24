@@ -54,7 +54,6 @@ export class TodoTxtParser {
                     const taskWithInheritance = TaskBuilder.createTask(
                         line,
                         this.extensionHandler,
-                        parent.extensions,
                         parent,
                     );
 

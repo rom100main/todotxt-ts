@@ -32,7 +32,8 @@ export interface TodoTxtExtension {
     key: string;
     parsingFunction?: (value: string) => any;
     serializingFunction?: (value: any) => string;
-    inheritShadow: boolean;
+    inherit?: boolean;
+    shadow?: boolean;
 }
 
 export interface TaskExtensions {

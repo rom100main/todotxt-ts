@@ -1,5 +1,0 @@
-(A) Default parser for date and number
-    (A) Refactor to create utils for date
-(B) Extension can be a list of value
-    (A) Inherit shadow should define if you should keep parent extension value (i.e. use list if needed)
-    (B) Add new value in extension: inherit; if true subtaks inherit parent value

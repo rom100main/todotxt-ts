@@ -1,11 +1,11 @@
 import { Task, Priority, TaskExtensions } from "./types";
 import { ExtensionHandler } from "./extension-handler";
+import { DateUtils } from "./utils";
 
 export class TaskBuilder {
     static createTask(
         raw: string,
         extensionHandler: ExtensionHandler,
-        parentExtensions?: TaskExtensions,
         parent?: Task,
     ): Task {
         const trimmed = raw.trim();
@@ -32,18 +32,9 @@ export class TaskBuilder {
 
         this.extractProjectsAndContexts(task);
 
-        let inheritedExtensions = parentExtensions || {};
-        if (parent) {
-            inheritedExtensions = this.inheritParentValues(
-                parent,
-                inheritedExtensions,
-                extensionHandler,
-            );
-        }
-
         task.extensions = extensionHandler.parseExtensions(
             task.description,
-            inheritedExtensions,
+            parent,
         );
 
         if (parent) {
@@ -51,23 +42,6 @@ export class TaskBuilder {
         }
 
         return task;
-    }
-
-    private static inheritParentValues(
-        parent: Task,
-        parentExtensions: TaskExtensions,
-        extensionHandler: ExtensionHandler,
-    ): TaskExtensions {
-        const inherited: TaskExtensions = {};
-
-        for (const [key, value] of Object.entries(parent.extensions)) {
-            const extension = extensionHandler.getExtension(key);
-            if (!extension || !extension.inheritShadow) {
-                inherited[key] = value;
-            }
-        }
-
-        return { ...inherited, ...parentExtensions };
     }
 
     private static inheritParentProperties(task: Task, parent: Task): void {
@@ -93,7 +67,7 @@ export class TaskBuilder {
 
         if (parts.length >= 2) {
             const completionDateStr = parts[1];
-            task.completionDate = this.parseDate(completionDateStr);
+            task.completionDate = DateUtils.parseDate(completionDateStr);
 
             let remainingParts = parts.slice(2);
 
@@ -105,8 +79,11 @@ export class TaskBuilder {
                 remainingParts = remainingParts.slice(1);
             }
 
-            if (remainingParts.length > 0 && this.isDate(remainingParts[0])) {
-                task.creationDate = this.parseDate(remainingParts[0]);
+            if (
+                remainingParts.length > 0 &&
+                DateUtils.isDate(remainingParts[0])
+            ) {
+                task.creationDate = DateUtils.parseDate(remainingParts[0]);
                 remainingParts = remainingParts.slice(1);
             }
 
@@ -123,8 +100,8 @@ export class TaskBuilder {
             remainingParts = remainingParts.slice(1);
         }
 
-        if (remainingParts.length > 0 && this.isDate(remainingParts[0])) {
-            task.creationDate = this.parseDate(remainingParts[0]);
+        if (remainingParts.length > 0 && DateUtils.isDate(remainingParts[0])) {
+            task.creationDate = DateUtils.parseDate(remainingParts[0]);
             remainingParts = remainingParts.slice(1);
         }
 
@@ -147,18 +124,5 @@ export class TaskBuilder {
 
     private static isPriority(token: string): boolean {
         return /^\([A-Z]\)$/.test(token);
-    }
-
-    private static isDate(token: string): boolean {
-        return /^\d{4}-\d{2}-\d{2}$/.test(token);
-    }
-
-    private static parseDate(dateStr: string): Date | undefined {
-        const match = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-        if (match) {
-            const [, year, month, day] = match;
-            return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-        }
-        return undefined;
     }
 }

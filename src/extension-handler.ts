@@ -1,4 +1,5 @@
-import { TodoTxtExtension, TaskExtensions } from "./types";
+import { TodoTxtExtension, TaskExtensions, Task } from "./types";
+import { ListUtils, DateUtils } from "./utils";
 
 export class ExtensionHandler {
     private extensions: Map<string, TodoTxtExtension> = new Map();
@@ -23,11 +24,31 @@ export class ExtensionHandler {
         return this.extensions.get(key.toLowerCase());
     }
 
-    parseExtensions(
-        text: string,
-        parentExtensions?: TaskExtensions,
-    ): TaskExtensions {
-        const extensions: TaskExtensions = { ...parentExtensions };
+    parseExtensions(text: string, parent?: Task): TaskExtensions {
+        const extensions: TaskExtensions = {};
+
+        // Inherit from parent if exists
+        if (parent) {
+            for (const [key, value] of Object.entries(parent.extensions)) {
+                const extension = this.getExtension(key);
+
+                // Default behavior: inherit if no extension defined
+                if (!extension) {
+                    extensions[key] = value;
+                    continue;
+                }
+
+                if (extension.inherit === false) {
+                    continue;
+                }
+
+                // inherit is true (or undefined, defaults to true)
+                // shadow logic will be handled when parsing current extensions
+                extensions[key] = value;
+            }
+        }
+
+        // Parse current task extensions and apply inheritance/shadow logic
         const extensionRegex = /(\w+):([^\s]+)/g;
         let match;
 
@@ -35,14 +56,62 @@ export class ExtensionHandler {
             const [, key, value] = match;
             const extension = this.getExtension(key);
 
-            if (extension) {
-                const parsedValue = extension.parsingFunction
-                    ? extension.parsingFunction(value)
-                    : value;
+            const parsedValue = extension?.parsingFunction
+                ? extension.parsingFunction(value)
+                : this.parseValueByType(value);
 
-                extensions[key] = parsedValue;
+            if (extension) {
+                if (extension.inherit === false) {
+                    extensions[key] = parsedValue;
+                } else if (extension.shadow) {
+                    extensions[key] = parsedValue;
+                } else {
+                    // merge with parent using list logic
+                    const parentValue = extensions[key];
+                    if (parentValue !== undefined) {
+                        if (
+                            ListUtils.isList(parentValue) ||
+                            ListUtils.isList(parsedValue)
+                        ) {
+                            const parentList = ListUtils.isList(parentValue)
+                                ? parentValue
+                                : [parentValue];
+                            const currentList = ListUtils.isList(parsedValue)
+                                ? parsedValue
+                                : [parsedValue];
+                            const mergedList = [
+                                ...parentList,
+                                ...currentList,
+                            ].filter(
+                                (item, index, self) =>
+                                    self.indexOf(item) === index,
+                            );
+                            extensions[key] =
+                                mergedList.length === 1
+                                    ? mergedList[0]
+                                    : mergedList;
+                        } else {
+                            // Both are single values, create list
+                            const mergedList = [
+                                parentValue,
+                                parsedValue,
+                            ].filter(
+                                (item, index, self) =>
+                                    self.indexOf(item) === index,
+                            );
+                            extensions[key] =
+                                mergedList.length === 1
+                                    ? mergedList[0]
+                                    : mergedList;
+                        }
+                    } else {
+                        // No parent value, just use current
+                        extensions[key] = parsedValue;
+                    }
+                }
             } else {
-                extensions[key] = value;
+                // No extension definition, just overwrite
+                extensions[key] = parsedValue;
             }
         }
 
@@ -60,18 +129,7 @@ export class ExtensionHandler {
                 if (extension && extension.serializingFunction) {
                     serializedValue = extension.serializingFunction(value);
                 } else {
-                    // Default type conversion to string
-                    if (value instanceof Date) {
-                        const year = value.getFullYear();
-                        const month = String(value.getMonth() + 1).padStart(
-                            2,
-                            "0",
-                        );
-                        const day = String(value.getDate()).padStart(2, "0");
-                        serializedValue = `${year}-${month}-${day}`;
-                    } else {
-                        serializedValue = String(value);
-                    }
+                    serializedValue = this.serializeValueByType(value);
                 }
 
                 parts.push(`${key}:${serializedValue}`);
@@ -79,6 +137,30 @@ export class ExtensionHandler {
         }
 
         return parts;
+    }
+
+    private parseValueByType(value: string): any {
+        if (DateUtils.isDate(value)) {
+            return DateUtils.parseDate(value);
+        }
+
+        if (value.includes(",")) {
+            return ListUtils.parseList(value);
+        }
+
+        return value;
+    }
+
+    private serializeValueByType(value: any): string {
+        if (value instanceof Date) {
+            return DateUtils.formatDate(value);
+        }
+
+        if (ListUtils.isList(value)) {
+            return ListUtils.serializeList(value);
+        }
+
+        return String(value);
     }
 
     getAllExtensions(): TodoTxtExtension[] {
