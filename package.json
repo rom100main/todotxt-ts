@@ -28,8 +28,8 @@
         "dev": "tsc --watch",
         "test": "jest",
         "clean": "rm -rf dist",
-        "lint": "eslint . --ext .ts",
-        "lint:fix": "eslint . --ext .ts --fix"
+        "lint": "eslint . --ext .ts,.cjs",
+        "lint:fix": "eslint . --ext .ts,.cjs --fix"
     },
     "devDependencies": {
         "@types/jest": "^29.5.0",
