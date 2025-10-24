@@ -71,9 +71,11 @@ describe("TodoTxtParser", () => {
 
             const task = parser.parseLine("Task due:2023-10-25");
             expect(task.extensions.due).toBeInstanceOf(Date);
-            expect(task.extensions.due.getFullYear()).toBe(2023);
-            expect(task.extensions.due.getMonth()).toBe(9);
-            expect(task.extensions.due.getDate()).toBe(25);
+            if (task.extensions.due instanceof Date) {
+                expect(task.extensions.due.getFullYear()).toBe(2023);
+                expect(task.extensions.due.getMonth()).toBe(9);
+                expect(task.extensions.due.getDate()).toBe(25);
+            }
         });
 
         test("should parse extensions with both parser and serializer", () => {
