@@ -123,6 +123,20 @@ export class ExtensionHandler {
             return DateUtils.parseDate(value);
         }
 
+        const lower = value.toLowerCase();
+        if (lower === "true" || lower === "false") {
+            return lower === "true";
+        }
+        if (lower === "yes" || lower === "no") {
+            return lower === "yes";
+        }
+        if (lower === "y" || lower === "n") {
+            return lower === "y";
+        }
+        if (lower === "on" || lower === "off") {
+            return lower === "on";
+        }
+
         if (/^-?\d+$/.test(value)) {
             return parseInt(value, 10);
         }
