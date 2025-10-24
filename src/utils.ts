@@ -1,4 +1,6 @@
 export class DateUtils {
+    static parseDate(dateStr: `${string}-${string}-${string}`): Date;
+    static parseDate(dateStr: string): Date | undefined;
     static parseDate(dateStr: string): Date | undefined {
         const match = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})$/);
         if (match) {
@@ -9,7 +11,7 @@ export class DateUtils {
         return undefined;
     }
 
-    static isDate(token: string): boolean {
+    static isDate(token: string): token is `${string}-${string}-${string}` {
         return /^\d{4}-\d{2}-\d{2}$/.test(token);
     }
 
@@ -31,9 +33,5 @@ export class ListUtils {
 
     static serializeList(items: string[]): string {
         return items.join(",");
-    }
-
-    static isList(value: any): boolean {
-        return Array.isArray(value);
     }
 }

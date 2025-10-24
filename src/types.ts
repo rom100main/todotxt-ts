@@ -28,17 +28,19 @@ export type Priority =
     | "Y"
     | "Z";
 
-export interface TodoTxtExtension {
+export interface Serializable {
+    toString(): string;
+}
+
+export interface TodoTxtExtension<T extends Serializable = Serializable> {
     key: string;
-    parsingFunction?: (value: string) => any;
-    serializingFunction?: (value: any) => string;
+    parsingFunction?: (value: string) => T;
+    serializingFunction?: (value: T) => string;
     inherit?: boolean;
     shadow?: boolean;
 }
 
-export interface TaskExtensions {
-    [key: string]: any;
-}
+export type TaskExtensions = Record<string, Serializable>;
 
 export interface Task {
     raw: string;

@@ -1,8 +1,8 @@
-import { TodoTxtExtension, TaskExtensions, Task } from "./types";
+import { TodoTxtExtension, TaskExtensions, Task, Serializable } from "./types";
 import { ListUtils, DateUtils } from "./utils";
 
 export class ExtensionHandler {
-    private extensions: Map<string, TodoTxtExtension> = new Map();
+    private extensions = new Map<string, TodoTxtExtension>();
 
     constructor(extensions: TodoTxtExtension[] = []) {
         extensions.forEach((ext) => this.addExtension(ext));
@@ -69,9 +69,9 @@ export class ExtensionHandler {
                     // merge with parent using list logic
                     const parentValue = extensions[key];
                     if (parentValue !== undefined) {
-                        if (ListUtils.isList(parentValue) || ListUtils.isList(parsedValue)) {
-                            const parentList = ListUtils.isList(parentValue) ? parentValue : [parentValue];
-                            const currentList = ListUtils.isList(parsedValue) ? parsedValue : [parsedValue];
+                        if (Array.isArray(parentValue) || Array.isArray(parsedValue)) {
+                            const parentList = Array.isArray(parentValue) ? parentValue : [parentValue];
+                            const currentList = Array.isArray(parsedValue) ? parsedValue : [parsedValue];
                             const mergedList = [...parentList, ...currentList].filter(
                                 (item, index, self) => self.indexOf(item) === index,
                             );
@@ -118,7 +118,7 @@ export class ExtensionHandler {
         return parts;
     }
 
-    private parseValueByType(value: string): any {
+    private parseValueByType(value: string): Serializable {
         if (DateUtils.isDate(value)) {
             return DateUtils.parseDate(value);
         }
@@ -138,27 +138,16 @@ export class ExtensionHandler {
         return value;
     }
 
-    private serializeValueByType(value: any): string {
+    private serializeValueByType(value: Serializable): string {
         if (value instanceof Date) {
             return DateUtils.formatDate(value);
         }
 
-        if (ListUtils.isList(value)) {
+        if (Array.isArray(value)) {
             return ListUtils.serializeList(value);
         }
 
-        if (value != null && typeof (value as any).toString === "function") {
-            try {
-                const str = (value as any).toString();
-                if (typeof str === "string") {
-                    return str;
-                }
-            } catch {
-                // If toString throws, fall through to fallback
-            }
-        }
-
-        return String(value);
+        return value.toString();
     }
 
     getAllExtensions(): TodoTxtExtension[] {

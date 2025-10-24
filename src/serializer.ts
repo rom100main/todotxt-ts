@@ -8,7 +8,7 @@ export class TodoTxtSerializer {
         this.extensionHandler = extensionHandler;
     }
 
-    serializeTasks(tasks: Task[], includeSubtasks: boolean = true, preserveIndentation: boolean = true): string {
+    serializeTasks(tasks: Task[], includeSubtasks = true, preserveIndentation = true): string {
         const lines: string[] = [];
 
         for (const task of tasks) {
@@ -18,7 +18,7 @@ export class TodoTxtSerializer {
         return lines.join("\n");
     }
 
-    serializeTask(task: Task, includeSubtasks: boolean = true, preserveIndentation: boolean = true): string[] {
+    serializeTask(task: Task, includeSubtasks = true, preserveIndentation = true): string[] {
         const lines: string[] = [];
 
         const line = this.serializeSingleTask(task, preserveIndentation ? task.indentLevel : 0);
@@ -33,7 +33,7 @@ export class TodoTxtSerializer {
         return lines;
     }
 
-    private serializeSingleTask(task: Task, indentLevel: number = 0): string {
+    private serializeSingleTask(task: Task, indentLevel = 0): string {
         const parts: string[] = [];
 
         const indent = " ".repeat(indentLevel);
