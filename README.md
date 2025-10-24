@@ -58,7 +58,12 @@ Main class for parsing and serializing todo.txt content.
 #### Constructor
 
 ```typescript
-new TodoTxt(options?: ParseOptions)
+new TodoTxt(options?: TodoOptions)
+
+interface TodoOptions {
+    extensions?: TodoTxtExtension[];  // List of extensions
+    handleSubtasks?: boolean;         // Handle subtasks (default: true)
+}
 ```
 
 #### Methods
@@ -73,18 +78,18 @@ new TodoTxt(options?: ParseOptions)
 
 ```typescript
 interface Task {
-  raw: string;                    // Original line
-  completed: boolean;             // Task completion status
-  priority?: Priority;            // A-Z priority
-  creationDate?: Date;            // Task creation date
-  completionDate?: Date;          // Task completion date
-  description: string;            // Task description
-  projects: string[];             // +project tags
-  contexts: string[];             // @context tags
-  extensions: TaskExtensions;     // Custom extensions
-  subtasks: Task[];               // Nested subtasks
-  indentLevel: number;            // Indentation level
-  parent?: Task;                  // Parent task reference
+  raw: string;                 // Original line
+  completed: boolean;          // Task completion status
+  priority?: Priority;         // A-Z priority
+  creationDate?: Date;         // Task creation date
+  completionDate?: Date;       // Task completion date
+  description: string;         // Task description
+  projects: string[];          // +project tags
+  contexts: string[];          // @context tags
+  extensions: TaskExtensions;  // Custom extensions
+  subtasks: Task[];            // Nested subtasks
+  indentLevel: number;         // Indentation level
+  parent?: Task;               // Parent task reference
 }
 ```
 
@@ -92,10 +97,10 @@ interface Task {
 
 ```typescript
 interface TodoTxtExtension {
-  key: string;                    // Extension key (e.g., 'due')
-  parsingFunction?: (value: string) => any;  // Custom parser
+  key: string;                                   // Extension key (e.g., 'due')
+  parsingFunction?: (value: string) => any;      // Custom parser
   serializingFunction?: (value: any) => string;  // Custom serializer
-  inheritShadow: boolean;         // true = don't inherit from parent
+  inheritShadow: boolean;                        // true = don't inherit from parent
 }
 ```
 
