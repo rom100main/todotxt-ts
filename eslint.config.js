@@ -3,6 +3,7 @@ const tseslint = require('@typescript-eslint/eslint-plugin');
 const tsparser = require('@typescript-eslint/parser');
 const prettier = require('eslint-config-prettier');
 const prettierPlugin = require('eslint-plugin-prettier');
+const importPlugin = require('eslint-plugin-import');
 
 module.exports = [
   js.configs.recommended,
@@ -36,6 +37,7 @@ module.exports = [
     plugins: {
       '@typescript-eslint': tseslint,
       prettier: prettierPlugin,
+      import: importPlugin,
     },
     rules: {
       ...tseslint.configs.recommended.rules,
@@ -46,6 +48,21 @@ module.exports = [
       "@typescript-eslint/no-empty-function": "off",
       "@typescript-eslint/no-explicit-any": "off",
       "prettier/prettier": "error",
+      "import/order": ["error", {
+        "groups": [
+          "builtin",
+          "external",
+          "internal",
+          "parent",
+          "sibling",
+          "index"
+        ],
+        "newlines-between": "always",
+        "alphabetize": {
+          "order": "asc",
+          "caseInsensitive": true
+        }
+      }],
     },
   },
   {
