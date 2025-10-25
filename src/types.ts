@@ -58,9 +58,14 @@ export interface Task {
 }
 
 export interface TodoOptions {
+    filePath?: string;
+    autoSave?: boolean;
     extensions?: TodoTxtExtension[];
     handleSubtasks?: boolean;
 }
+
+export type TaskFilter = (task: Task) => boolean;
+export type TaskSorter = (a: Task, b: Task) => number;
 
 export interface ParseOptions {
     extensionHandler?: ExtensionHandler;
