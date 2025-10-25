@@ -1,45 +1,49 @@
-import { TodoTxt } from "../src/index";
+import { TodoTxtParser, TodoTxtSerializer, ExtensionHandler } from "../src/index";
 import { Serializable } from "../src/types";
 
 describe("TodoTxtSerializer", () => {
-    let todo: TodoTxt;
+    let parser: TodoTxtParser;
+    let serializer: TodoTxtSerializer;
+    let extensionHandler: ExtensionHandler;
 
     beforeEach(() => {
-        todo = new TodoTxt();
+        extensionHandler = new ExtensionHandler();
+        parser = new TodoTxtParser({ extensionHandler });
+        serializer = new TodoTxtSerializer(extensionHandler);
     });
 
     test("should serialize a simple task", () => {
-        const task = todo.parseLine("Simple task");
-        const serialized = todo.serialize([task]);
+        const task = parser.parseLine("Simple task");
+        const serialized = serializer.serializeTasks([task]);
         expect(serialized).toBe("Simple task");
     });
 
     test("should serialize a task with priority", () => {
-        const task = todo.parseLine("(A) Task with priority");
-        const serialized = todo.serialize([task]);
+        const task = parser.parseLine("(A) Task with priority");
+        const serialized = serializer.serializeTasks([task]);
         expect(serialized).toBe("(A) Task with priority");
     });
 
     test("should serialize a task with creation date", () => {
-        const task = todo.parseLine("2023-10-24 Task with date");
-        const serialized = todo.serialize([task]);
+        const task = parser.parseLine("2023-10-24 Task with date");
+        const serialized = serializer.serializeTasks([task]);
         expect(serialized).toBe("2023-10-24 Task with date");
     });
 
     test("should serialize a completed task", () => {
-        const task = todo.parseLine("x 2023-10-24 Completed task");
-        const serialized = todo.serialize([task]);
+        const task = parser.parseLine("x 2023-10-24 Completed task");
+        const serialized = serializer.serializeTasks([task]);
         expect(serialized).toBe("x 2023-10-24 Completed task");
     });
 
     test("should auto serialize a task with extensions", () => {
-        const task = todo.parseLine("Task due:2023-10-25 new:true n:1 f:0.1 l:1,2,3");
-        const serialized = todo.serialize([task]);
+        const task = parser.parseLine("Task due:2023-10-25 new:true n:1 f:0.1 l:1,2,3");
+        const serialized = serializer.serializeTasks([task]);
         expect(serialized).toBe("Task due:2023-10-25 new:true n:1 f:0.1 l:1,2,3");
     });
 
     test("should serialize extensions with custom serializer", () => {
-        todo.addExtension({
+        extensionHandler.addExtension({
             key: "estimate",
             parsingFunction: (value: string): number => {
                 if (value.endsWith("h")) {
@@ -51,8 +55,8 @@ describe("TodoTxtSerializer", () => {
             inherit: false,
         });
 
-        const task = todo.parseLine("Task estimate:2h");
-        const serialized = todo.serialize([task]);
+        const task = parser.parseLine("Task estimate:2h");
+        const serialized = serializer.serializeTasks([task]);
         expect(serialized).toBe("Task estimate:2h");
     });
 
@@ -61,11 +65,8 @@ describe("TodoTxtSerializer", () => {
     Subtask 1
     Subtask 2`;
 
-        const tasks = todo.parse(content);
-        const serialized = todo.serialize(tasks, {
-            includeSubtasks: true,
-            preserveIndentation: true,
-        });
+        const tasks = parser.parseFile(content);
+        const serialized = serializer.serializeTasks(tasks, true, true);
 
         const expected = `Main task
 Subtask 1

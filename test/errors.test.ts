@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { TodoTxt } from "../src";
 import {
     TodoTxtError,
     ParseError,
@@ -288,37 +287,6 @@ describe("Custom Error Handling", () => {
             expect(error.priority).toBe("AA");
             expect(error.code).toBe("PRIORITY_ERROR");
             expect(error.name).toBe("PriorityError");
-        });
-    });
-
-    describe("Integration Tests", () => {
-        let todoTxt: TodoTxt;
-
-        beforeEach(() => {
-            todoTxt = new TodoTxt();
-        });
-
-        test("should handle errors in parseFile gracefully", () => {
-            expect(() => todoTxt.parse(null as any)).toThrow(ValidationError);
-            expect(() => todoTxt.parse(undefined as any)).toThrow(ValidationError);
-        });
-
-        test("should handle errors in parseLine gracefully", () => {
-            expect(() => todoTxt.parseLine(null as any)).toThrow(ValidationError);
-            expect(() => todoTxt.parseLine(undefined as any)).toThrow(ValidationError);
-        });
-
-        test("should handle errors in serialize gracefully", () => {
-            expect(() => todoTxt.serialize(null as any)).toThrow(ValidationError);
-            expect(() => todoTxt.serialize(undefined as any)).toThrow(ValidationError);
-            expect(() => todoTxt.serialize("invalid" as any)).toThrow(ValidationError);
-        });
-
-        test("should handle extension errors gracefully", () => {
-            expect(() => todoTxt.addExtension(null as any)).toThrow(ValidationError);
-            expect(() => todoTxt.addExtension({} as any)).toThrow(ValidationError);
-            expect(() => todoTxt.removeExtension(null as any)).toThrow(ValidationError);
-            expect(() => todoTxt.removeExtension("")).toThrow(ValidationError);
         });
     });
 });

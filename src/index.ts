@@ -61,14 +61,6 @@ export class TodoTxt {
         return result;
     }
 
-    private findTaskByNumber(number: number): Task | null {
-        const flatTasks = this.flattenTasks(this.tasks);
-        if (number < 1 || number > flatTasks.length) {
-            return null;
-        }
-        return flatTasks[number - 1];
-    }
-
     private findTasksByNumbers(numbers: number[]): Task[] {
         const flatTasks = this.flattenTasks(this.tasks);
         return numbers.filter((n) => n >= 1 && n <= flatTasks.length).map((n) => flatTasks[n - 1]);
