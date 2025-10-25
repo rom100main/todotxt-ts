@@ -1,4 +1,10 @@
 (A) Custom error handling
+(B) Helpers function
+    (A) List (can take a filter or a sort)
+    (B) Add task(s)
+    (C) Mark task(s) as complete
+    (D) Remove task(s)
+    (E) Update task(s)
 (B) Docs
     (A) Contributing
     (B) Changelog
