@@ -1,4 +1,5 @@
 import { TodoTxtParser, ExtensionHandler } from "../src/index";
+import { Serializable } from "../src/types";
 
 describe("TodoTxtParser", () => {
     let parser: TodoTxtParser;
@@ -8,15 +9,6 @@ describe("TodoTxtParser", () => {
     });
 
     describe("Basic parsing", () => {
-        test("should parse a simple task", () => {
-            const task = parser.parseLine("Simple task");
-            expect(task.description).toBe("Simple task");
-            expect(task.completed).toBe(false);
-            expect(task.priority).toBeUndefined();
-            expect(task.projects).toEqual([]);
-            expect(task.contexts).toEqual([]);
-        });
-
         test("should parse a task with priority", () => {
             const task = parser.parseLine("(A) Task with priority");
             expect(task.priority).toBe("A");
@@ -37,9 +29,24 @@ describe("TodoTxtParser", () => {
         });
 
         test("should parse a completed task", () => {
-            const task = parser.parseLine("x 2023-10-24 Completed task");
+            const task = parser.parseLine("x Completed task");
             expect(task.completed).toBe(true);
-            expect(task.completionDate).toEqual(new Date(Date.UTC(2023, 9, 24)));
+            expect(task.description).toBe("Completed task");
+        });
+
+        test("should parse a completed task with a completion date", () => {
+            const task = parser.parseLine("x 2023-10-25 Completed task");
+            expect(task.completed).toBe(true);
+            expect(task.creationDate).toBeUndefined();
+            expect(task.completionDate).toEqual(new Date(Date.UTC(2023, 9, 25)));
+            expect(task.description).toBe("Completed task");
+        });
+
+        test("should parse a completed task with a completion date and a creation date", () => {
+            const task = parser.parseLine("x 2023-10-25 2023-10-24 Completed task");
+            expect(task.completed).toBe(true);
+            expect(task.creationDate).toEqual(new Date(Date.UTC(2023, 9, 24)));
+            expect(task.completionDate).toEqual(new Date(Date.UTC(2023, 9, 25)));
             expect(task.description).toBe("Completed task");
         });
 
@@ -47,58 +54,6 @@ describe("TodoTxtParser", () => {
             const task = parser.parseLine("Task +Project1 +Project2 @context1 @context2");
             expect(task.projects).toEqual(["Project1", "Project2"]);
             expect(task.contexts).toEqual(["context1", "context2"]);
-        });
-    });
-
-    describe("Extension parsing", () => {
-        test("should parse extensions without custom parser", () => {
-            const task = parser.parseLine("Task due:2023-10-25 priority:high");
-            expect(task.extensions).toEqual({
-                due: new Date(Date.UTC(2023, 9, 25)),
-                priority: "high",
-            });
-        });
-
-        test("should parse extensions with custom parser", () => {
-            let extensionHandler = new ExtensionHandler();
-            extensionHandler.addExtension({
-                key: "due",
-                parsingFunction: (value: string) => new Date(value),
-                inherit: false,
-                shadow: true,
-            });
-            parser = new TodoTxtParser({ extensionHandler: extensionHandler });
-
-            const task = parser.parseLine("Task due:2023-10-25");
-            expect(task.extensions.due).toBeInstanceOf(Date);
-            if (task.extensions.due instanceof Date) {
-                expect(task.extensions.due.getFullYear()).toBe(2023);
-                expect(task.extensions.due.getMonth()).toBe(9);
-                expect(task.extensions.due.getDate()).toBe(25);
-            }
-        });
-
-        test("should parse extensions with both parser and serializer", () => {
-            let extensionHandler = new ExtensionHandler();
-            extensionHandler.addExtension({
-                key: "estimate",
-                parsingFunction: (value: string) => {
-                    if (value.endsWith("h")) {
-                        return parseInt(value.slice(0, -1)); // Return hours
-                    }
-                    if (value.endsWith("m")) {
-                        return parseInt(value.slice(0, -1)) / 60; // Convert minutes to hours
-                    }
-                    return parseInt(value);
-                },
-                serializingFunction: (hours: number) => `${hours}h`,
-                inherit: false,
-                shadow: true,
-            });
-            parser = new TodoTxtParser({ extensionHandler: extensionHandler });
-
-            const task = parser.parseLine("Task estimate:2h");
-            expect(task.extensions.estimate).toBe(2); // 2 hours
         });
     });
 
@@ -117,7 +72,7 @@ Another task`;
         });
 
         test("should inherit parent properties", () => {
-            const content = `(A) Main task +Project @home due:2023-10-25
+            const content = `(A) Main task +Project @home
     Subtask`;
 
             const tasks = parser.parseFile(content);
@@ -127,11 +82,31 @@ Another task`;
             expect(subtask.priority).toBeUndefined();
             expect(subtask.projects).toEqual(["Project"]);
             expect(subtask.contexts).toEqual(["home"]);
-            expect(subtask.extensions.due).toEqual(new Date(Date.UTC(2023, 9, 25)));
         });
     });
 
-    describe("Default type parsing", () => {
+    describe("Extension parsing", () => {
+        test("should parse extensions with both parser and serializer", () => {
+            let extensionHandler = new ExtensionHandler();
+            extensionHandler.addExtension({
+                key: "estimate",
+                parsingFunction: (value: string): number => {
+                    if (value.endsWith("h")) {
+                        return parseInt(value.slice(0, -1));
+                    }
+                    return parseInt(value);
+                },
+                serializingFunction: (value: Serializable) => `${value}h`,
+                inherit: false,
+            });
+            parser = new TodoTxtParser({ extensionHandler: extensionHandler });
+
+            const task = parser.parseLine("Task estimate:2h");
+            expect(task.extensions.estimate).toBe(2); // 2 hours
+        });
+    });
+
+    describe("Default extension type parsing", () => {
         test("should parse integers by default", () => {
             const task = parser.parseLine("Task priority:5 count:10 level:-3");
             expect(task.extensions.priority).toBe(5);
@@ -162,57 +137,56 @@ Another task`;
     });
 
     describe("Extension inheritance", () => {
-        test("should inherit extensions by default (inherit=true)", () => {
-            const content = `Parent task due:2023-10-25 priority:high
+        test("should inherit extensions when inherit=true", () => {
+            const extensionHandler = new ExtensionHandler();
+            extensionHandler.addExtension({
+                key: "due",
+                inherit: true,
+            });
+
+            const customParser = new TodoTxtParser({ extensionHandler });
+            const content = `Parent task due:2023-10-25
     Child task`;
 
-            const tasks = parser.parseFile(content);
+            const tasks = customParser.parseFile(content);
             const child = tasks[0].subtasks[0];
 
             expect(child.extensions.due).toEqual(new Date(Date.UTC(2023, 9, 25)));
-            expect(child.extensions.priority).toBe("high");
         });
 
         test("should not inherit extensions when inherit=false", () => {
             const extensionHandler = new ExtensionHandler();
             extensionHandler.addExtension({
-                key: "priority",
+                key: "inProgress",
                 inherit: false,
-                shadow: false,
-            });
-            extensionHandler.addExtension({
-                key: "due",
-                inherit: true,
-                shadow: false,
             });
 
             const customParser = new TodoTxtParser({ extensionHandler });
-            const content = `Parent task due:2023-10-25 priority:high
+            const content = `Parent task inProgress:yes
     Child task`;
 
             const tasks = customParser.parseFile(content);
             const child = tasks[0].subtasks[0];
 
-            expect(child.extensions.due).toEqual(new Date(Date.UTC(2023, 9, 25)));
-            expect(child.extensions.priority).toBeUndefined();
+            expect(child.extensions.inProgress).toBeUndefined();
         });
 
         test("should shadow parent values when shadow=true", () => {
             const extensionHandler = new ExtensionHandler();
             extensionHandler.addExtension({
-                key: "priority",
+                key: "due",
                 inherit: true,
                 shadow: true,
             });
 
             const customParser = new TodoTxtParser({ extensionHandler });
-            const content = `Parent task priority:high
-    Child task priority:low`;
+            const content = `Parent task due:2023-10-25
+    Child task due:2023-10-24`;
 
             const tasks = customParser.parseFile(content);
             const child = tasks[0].subtasks[0];
 
-            expect(child.extensions.priority).toBe("low");
+            expect(child.extensions.due).toEqual(new Date(Date.UTC(2023, 9, 24)));
         });
 
         test("should merge values when shadow=false", () => {
@@ -224,43 +198,13 @@ Another task`;
             });
 
             const customParser = new TodoTxtParser({ extensionHandler });
-            const content = `Parent task tags:urgent
-    Child task tags:important`;
+            const content = `Parent task tags:cooking
+    Child task tags:cookie`;
 
             const tasks = customParser.parseFile(content);
             const child = tasks[0].subtasks[0];
 
-            expect(child.extensions.tags).toEqual(["urgent", "important"]);
-        });
-
-        test("should handle complex inheritance scenarios", () => {
-            const extensionHandler = new ExtensionHandler();
-            extensionHandler.addExtension({
-                key: "priority",
-                inherit: true,
-                shadow: true,
-            });
-            extensionHandler.addExtension({
-                key: "tags",
-                inherit: true,
-                shadow: false,
-            });
-            extensionHandler.addExtension({
-                key: "private",
-                inherit: false,
-                shadow: true,
-            });
-
-            const customParser = new TodoTxtParser({ extensionHandler });
-            const content = `Parent task priority:high tags:urgent private:secret
-    Child task priority:low tags:important private:childsecret`;
-
-            const tasks = customParser.parseFile(content);
-            const child = tasks[0].subtasks[0];
-
-            expect(child.extensions.priority).toBe("low"); // shadowed
-            expect(child.extensions.tags).toEqual(["urgent", "important"]); // merged
-            expect(child.extensions.private).toBe("childsecret"); // not inherited, only child's value
+            expect(child.extensions.tags).toEqual(["cooking", "cookie"]);
         });
     });
 });

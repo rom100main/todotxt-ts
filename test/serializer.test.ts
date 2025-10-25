@@ -1,4 +1,5 @@
 import { TodoTxt } from "../src/index";
+import { Serializable } from "../src/types";
 
 describe("TodoTxtSerializer", () => {
     let todo: TodoTxt;
@@ -31,29 +32,26 @@ describe("TodoTxtSerializer", () => {
         expect(serialized).toBe("x 2023-10-24 Completed task");
     });
 
-    test("should serialize a task with extensions", () => {
-        todo.addExtension({
-            key: "due",
-            parsingFunction: (value: string) => new Date(value),
-            inherit: false,
-            shadow: true,
-        });
-
-        const task = todo.parseLine("Task due:2023-10-25");
+    test("should auto serialize a task with extensions", () => {
+        const task = todo.parseLine("Task due:2023-10-25 new:true n:1 f:0.1 l:1,2,3");
         const serialized = todo.serialize([task]);
-        expect(serialized).toBe("Task due:2023-10-25");
+        expect(serialized).toBe("Task due:2023-10-25 new:true n:1 f:0.1 l:1,2,3");
     });
 
     test("should serialize extensions with custom serializer", () => {
         todo.addExtension({
             key: "estimate",
-            parsingFunction: (value: string) => parseInt(value),
-            serializingFunction: (value: number) => `${value}h`,
+            parsingFunction: (value: string): number => {
+                if (value.endsWith("h")) {
+                    return parseInt(value.slice(0, -1));
+                }
+                return parseInt(value);
+            },
+            serializingFunction: (value: Serializable) => `${value}h`,
             inherit: false,
-            shadow: true,
         });
 
-        const task = todo.parseLine("Task estimate:2");
+        const task = todo.parseLine("Task estimate:2h");
         const serialized = todo.serialize([task]);
         expect(serialized).toBe("Task estimate:2h");
     });
