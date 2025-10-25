@@ -47,14 +47,14 @@ export class DateExtension implements ExtensionValue {
         if (!(other instanceof DateExtension)) {
             return false;
         }
-        return this === other;
+        return this.value.getTime() === other.value.getTime();
     }
 
     compareTo(other: ExtensionValue): number {
         if (!(other instanceof DateExtension)) {
             throw new ExtensionError("Cannot compare DateExtension with non-DateExtension", "");
         }
-        return this.value.getTime() - new Date(other.toString()).getTime();
+        return this.value.getTime() - other.value.getTime();
     }
 }
 
@@ -69,14 +69,14 @@ export class BooleanExtension implements ExtensionValue {
         if (!(other instanceof BooleanExtension)) {
             return false;
         }
-        return this === other;
+        return this.value === other.value;
     }
 
     compareTo(other: ExtensionValue): number {
         if (!(other instanceof BooleanExtension)) {
             throw new ExtensionError("Cannot compare BooleanExtension with non-BooleanExtension", "");
         }
-        return Number(this) - Number(other);
+        return Number(this.value) - Number(other.value);
     }
 }
 
@@ -91,7 +91,7 @@ export class NumberExtension implements ExtensionValue {
         if (!(other instanceof NumberExtension)) {
             return false;
         }
-        return this === other;
+        return this.value === other.value;
     }
 
     compareTo(other: ExtensionValue): number {
@@ -110,11 +110,11 @@ export class StringExtension implements ExtensionValue {
     }
 
     equals(other: ExtensionValue): boolean {
-        return this.toString() === other.toString();
+        return this.value.toString() === other.value.toString();
     }
 
     compareTo(other: ExtensionValue): number {
-        return this.toString().localeCompare(other.toString());
+        return this.value.toString().localeCompare(other.value.toString());
     }
 }
 
@@ -126,11 +126,11 @@ export class ArrayExtension implements ExtensionValue {
     }
 
     equals(other: ExtensionValue): boolean {
-        return this.toString() === other.toString();
+        return this.value.toString() === other.value.toString();
     }
 
     compareTo(other: ExtensionValue): number {
-        return this.toString().localeCompare(other.toString());
+        return this.value.toString().localeCompare(other.value.toString());
     }
 }
 
