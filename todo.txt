@@ -1,0 +1,10 @@
+(A) Custom error handling
+(B) Docs
+    (A) Contributing
+    (B) Changelog
+    (C) Template for issue and pull request
+(C) CI/CD pipeline trigger by tags
+    (A) build project
+    (B) run tests
+    (C) create release
+(D) npm compliance
