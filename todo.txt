@@ -1,4 +1,4 @@
-(A) Custom error handling
+x (A) Custom error handling
 (B) Helpers function
     (A) List (can take a filter or a sort)
     (B) Add task(s)

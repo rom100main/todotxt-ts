@@ -1,3 +1,4 @@
+import { ParseError, ValidationError } from "./errors";
 import { ExtensionHandler } from "./extension-handler";
 import { TaskBuilder } from "./task";
 import { Task, ParseOptions } from "./types";
@@ -12,25 +13,53 @@ export class TodoTxtParser {
     }
 
     parseFile(content: string): Task[] {
+        if (typeof content !== "string") {
+            throw new ValidationError("Content must be a string", "content", content);
+        }
+
         const lines = content.split("\n").filter((line) => line.trim() !== "");
 
         if (!this.handleSubtasks) {
-            return lines.map((line) => TaskBuilder.createTask(line, this.extensionHandler));
+            return lines.map((line, index) => {
+                try {
+                    return TaskBuilder.createTask(line, this.extensionHandler);
+                } catch (error) {
+                    const message = error instanceof Error ? error.message : String(error);
+                    throw new ParseError(`Failed to parse line ${index + 1}: ${message}`, line, index + 1);
+                }
+            });
         }
 
         return this.parseWithSubtasks(lines);
     }
 
     parseLine(line: string): Task {
-        return TaskBuilder.createTask(line, this.extensionHandler);
+        if (typeof line !== "string") {
+            throw new ValidationError("Line must be a string", "line", line);
+        }
+
+        try {
+            return TaskBuilder.createTask(line, this.extensionHandler);
+        } catch (error) {
+            const message = error instanceof Error ? error.message : String(error);
+            throw new ParseError(`Failed to parse line: ${message}`, line);
+        }
     }
 
     private parseWithSubtasks(lines: string[]): Task[] {
         const tasks: Task[] = [];
         const stack: Task[] = [];
 
-        for (const line of lines) {
-            const task = TaskBuilder.createTask(line, this.extensionHandler);
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i];
+            let task: Task;
+
+            try {
+                task = TaskBuilder.createTask(line, this.extensionHandler);
+            } catch (error) {
+                const message = error instanceof Error ? error.message : String(error);
+                throw new ParseError(`Failed to parse line ${i + 1}: ${message}`, line, i + 1);
+            }
 
             if (stack.length === 0) {
                 tasks.push(task);

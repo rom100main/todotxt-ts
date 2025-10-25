@@ -1,5 +1,7 @@
+import { SerializationError, ValidationError, DateError } from "./errors";
 import { ExtensionHandler } from "./extension-handler";
 import { Task } from "./types";
+import { DateUtils } from "./utils";
 
 export class TodoTxtSerializer {
     private extensionHandler: ExtensionHandler;
@@ -9,24 +11,49 @@ export class TodoTxtSerializer {
     }
 
     serializeTasks(tasks: Task[], includeSubtasks = true, preserveIndentation = true): string {
+        if (!Array.isArray(tasks)) {
+            throw new ValidationError("Tasks must be an array", "tasks", tasks);
+        }
+
         const lines: string[] = [];
 
-        for (const task of tasks) {
-            lines.push(...this.serializeTask(task, includeSubtasks, preserveIndentation));
+        for (let i = 0; i < tasks.length; i++) {
+            const task = tasks[i];
+            try {
+                lines.push(...this.serializeTask(task, includeSubtasks, preserveIndentation));
+            } catch (error) {
+                const message = error instanceof Error ? error.message : String(error);
+                throw new SerializationError(`Failed to serialize task at index ${i}: ${message}`, task);
+            }
         }
 
         return lines.join("\n");
     }
 
     serializeTask(task: Task, includeSubtasks = true, preserveIndentation = true): string[] {
+        if (!task || typeof task !== "object") {
+            throw new ValidationError("Task must be an object", "task", task);
+        }
+
         const lines: string[] = [];
 
-        const line = this.serializeSingleTask(task, preserveIndentation ? task.indentLevel : 0);
-        lines.push(line);
+        try {
+            const line = this.serializeSingleTask(task, preserveIndentation ? task.indentLevel : 0);
+            lines.push(line);
+        } catch (error) {
+            const message = error instanceof Error ? error.message : String(error);
+            throw new SerializationError(`Failed to serialize task: ${message}`, task);
+        }
 
-        if (includeSubtasks && task.subtasks.length > 0) {
-            for (const subtask of task.subtasks) {
-                lines.push(...this.serializeTask(subtask, includeSubtasks, preserveIndentation));
+        if (includeSubtasks && task.subtasks && task.subtasks.length > 0) {
+            for (let i = 0; i < task.subtasks.length; i++) {
+                const subtask = task.subtasks[i];
+                try {
+                    lines.push(...this.serializeTask(subtask, includeSubtasks, preserveIndentation));
+                } catch (error) {
+                    const message = error instanceof Error ? error.message : String(error);
+                    throw new SerializationError(`Failed to serialize subtask at index ${i}: ${message}`, subtask);
+                }
             }
         }
 
@@ -80,9 +107,14 @@ export class TodoTxtSerializer {
     }
 
     private formatDate(date: Date): string {
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, "0");
-        const day = String(date.getDate()).padStart(2, "0");
-        return `${year}-${month}-${day}`;
+        if (!(date instanceof Date) || isNaN(date.getTime())) {
+            throw new DateError("Invalid date object", date?.toString());
+        }
+
+        try {
+            return DateUtils.formatDate(date);
+        } catch {
+            throw new DateError(`Failed to format date: ${date.toString()}`, date.toString());
+        }
     }
 }

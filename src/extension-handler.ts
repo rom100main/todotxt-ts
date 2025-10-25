@@ -1,3 +1,4 @@
+import { ExtensionError, ValidationError } from "./errors";
 import { TodoTxtExtension, TaskExtensions, Task, Serializable } from "./types";
 import { ListUtils, DateUtils } from "./utils";
 
@@ -9,10 +10,34 @@ export class ExtensionHandler {
     }
 
     addExtension(extension: TodoTxtExtension): void {
+        if (!extension || typeof extension !== "object") {
+            throw new ValidationError("Extension must be an object", "extension", extension);
+        }
+
+        if (!extension.key || typeof extension.key !== "string") {
+            throw new ValidationError("Extension must have a valid key", "extension.key", extension.key);
+        }
+
+        if (extension.key.trim() === "") {
+            throw new ValidationError("Extension key cannot be empty", "extension.key", extension.key);
+        }
+
+        if (this.extensions.has(extension.key.toLowerCase())) {
+            throw new ExtensionError(`Extension with key '${extension.key}' already exists`, extension.key);
+        }
+
         this.extensions.set(extension.key.toLowerCase(), extension);
     }
 
     removeExtension(key: string): boolean {
+        if (!key || typeof key !== "string") {
+            throw new ValidationError("Key must be a non-empty string", "key", key);
+        }
+
+        if (!this.extensions.has(key.toLowerCase())) {
+            throw new ExtensionError(`Extension with key '${key}' does not exist`, key);
+        }
+
         return this.extensions.delete(key.toLowerCase());
     }
 
@@ -56,9 +81,15 @@ export class ExtensionHandler {
             const [, key, value] = match;
             const extension = this.getExtension(key);
 
-            const parsedValue = extension?.parsingFunction
-                ? extension.parsingFunction(value)
-                : this.parseValueByType(value);
+            let parsedValue: Serializable;
+            try {
+                parsedValue = extension?.parsingFunction
+                    ? extension.parsingFunction(value)
+                    : this.parseValueByType(value);
+            } catch (error) {
+                const message = error instanceof Error ? error.message : String(error);
+                throw new ExtensionError(`Failed to parse extension '${key}': ${message}`, key);
+            }
 
             if (extension) {
                 if (extension.shadow === false) {
@@ -104,10 +135,15 @@ export class ExtensionHandler {
                 const extension = this.getExtension(key);
                 let serializedValue: string;
 
-                if (extension && extension.serializingFunction) {
-                    serializedValue = extension.serializingFunction(value);
-                } else {
-                    serializedValue = this.serializeValueByType(value);
+                try {
+                    if (extension && extension.serializingFunction) {
+                        serializedValue = extension.serializingFunction(value);
+                    } else {
+                        serializedValue = this.serializeValueByType(value);
+                    }
+                } catch (error) {
+                    const message = error instanceof Error ? error.message : String(error);
+                    throw new ExtensionError(`Failed to serialize extension '${key}': ${message}`, key);
                 }
 
                 parts.push(`${key}:${serializedValue}`);

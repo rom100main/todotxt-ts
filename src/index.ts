@@ -1,14 +1,24 @@
+import {
+    TodoTxtError,
+    ParseError,
+    ExtensionError,
+    SerializationError,
+    ValidationError,
+    DateError,
+    PriorityError,
+} from "./errors";
 import { ExtensionHandler } from "./extension-handler";
 import { TodoTxtParser } from "./parser";
 import { TodoTxtSerializer } from "./serializer";
 import { TaskBuilder } from "./task";
 import { Priority, Task, TodoTxtExtension, TaskExtensions, TodoOptions, SaveOptions } from "./types";
 
-export { Priority, Task, TodoTxtExtension, TaskExtensions };
+export { Priority, Task, TodoTxtExtension, TaskExtensions, TodoOptions, SaveOptions };
 export { ExtensionHandler };
 export { TaskBuilder };
 export { TodoTxtParser };
 export { TodoTxtSerializer };
+export { TodoTxtError, ParseError, ExtensionError, SerializationError, ValidationError, DateError, PriorityError };
 
 export class TodoTxt {
     private parser: TodoTxtParser;
