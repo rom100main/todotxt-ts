@@ -59,13 +59,15 @@ export class TaskBuilder {
         const parts = line.split(" ");
 
         if (parts.length >= 2) {
-            const completionDateStr = parts[1];
-            task.completionDate = DateUtils.parseDate(completionDateStr);
-
-            let remainingParts = parts.slice(2);
+            let remainingParts = parts.slice(1); // Skip the "x"
 
             if (remainingParts.length > 0 && this.isPriority(remainingParts[0])) {
                 task.priority = remainingParts[0].slice(1, -1) as Priority;
+                remainingParts = remainingParts.slice(1);
+            }
+
+            if (remainingParts.length > 0 && DateUtils.isDate(remainingParts[0])) {
+                task.completionDate = DateUtils.parseDate(remainingParts[0]);
                 remainingParts = remainingParts.slice(1);
             }
 
