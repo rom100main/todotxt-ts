@@ -61,12 +61,8 @@ export class ExtensionHandler {
                 : this.parseValueByType(value);
 
             if (extension) {
-                if (extension.inherit === false) {
-                    extensions[key] = parsedValue;
-                } else if (extension.shadow) {
-                    extensions[key] = parsedValue;
-                } else {
-                    // merge with parent using list logic
+                if (extension.shadow === false) {
+                    // Merge with parent using list logic
                     const parentValue = extensions[key];
                     if (parentValue !== undefined) {
                         if (Array.isArray(parentValue) || Array.isArray(parsedValue)) {
@@ -87,6 +83,9 @@ export class ExtensionHandler {
                         // No parent value, just use current
                         extensions[key] = parsedValue;
                     }
+                } else {
+                    // shadow is true (or undefined, defaults to true)
+                    extensions[key] = parsedValue;
                 }
             } else {
                 // No extension definition, just overwrite
