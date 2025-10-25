@@ -1,5 +1,5 @@
 import { TodoTxtParser, ExtensionHandler } from "../src/index";
-import { Serializable } from "../src/types";
+import { ExtensionValue, NumberExtension } from "../src/types";
 
 describe("TodoTxtParser", () => {
     let parser: TodoTxtParser;
@@ -90,49 +90,94 @@ Another task`;
             let extensionHandler = new ExtensionHandler();
             extensionHandler.addExtension({
                 key: "estimate",
-                parsingFunction: (value: string): number => {
+                parsingFunction: (value: string): NumberExtension => {
+                    let numValue: number;
                     if (value.endsWith("h")) {
-                        return parseInt(value.slice(0, -1));
+                        numValue = parseInt(value.slice(0, -1));
+                    } else {
+                        numValue = parseInt(value);
                     }
-                    return parseInt(value);
+                    return new NumberExtension(numValue);
                 },
-                serializingFunction: (value: Serializable) => `${value}h`,
+                serializingFunction: (value: ExtensionValue) => `${value}h`,
                 inherit: false,
             });
             parser = new TodoTxtParser({ extensionHandler: extensionHandler });
 
             const task = parser.parseLine("Task estimate:2h");
-            expect(task.extensions.estimate).toBe(2); // 2 hours
+            expect(task.extensions.estimate.value).toBe(2); // 2 hours
         });
     });
 
     describe("Default extension type parsing", () => {
+        test("should parse strings by default", () => {
+            const task = parser.parseLine("Task name:Romain");
+            expect(task.extensions.name.value).toBe("Romain");
+            expect(typeof task.extensions.name.value).toBe("string");
+        });
+
         test("should parse integers by default", () => {
             const task = parser.parseLine("Task priority:5 count:10 level:-3");
-            expect(task.extensions.priority).toBe(5);
-            expect(task.extensions.count).toBe(10);
-            expect(task.extensions.level).toBe(-3);
-            expect(typeof task.extensions.priority).toBe("number");
-            expect(typeof task.extensions.count).toBe("number");
-            expect(typeof task.extensions.level).toBe("number");
+            expect(task.extensions.priority.value).toBe(5);
+            expect(task.extensions.count.value).toBe(10);
+            expect(task.extensions.level.value).toBe(-3);
+            expect(typeof task.extensions.priority.value).toBe("number");
+            expect(typeof task.extensions.count.value).toBe("number");
+            expect(typeof task.extensions.level.value).toBe("number");
         });
 
         test("should parse floats by default", () => {
             const task = parser.parseLine("Task rating:4.5 temperature:-2.3 weight:0.75");
-            expect(task.extensions.rating).toBe(4.5);
-            expect(task.extensions.temperature).toBe(-2.3);
-            expect(task.extensions.weight).toBe(0.75);
-            expect(typeof task.extensions.rating).toBe("number");
-            expect(typeof task.extensions.temperature).toBe("number");
-            expect(typeof task.extensions.weight).toBe("number");
+            expect(task.extensions.rating.value).toBe(4.5);
+            expect(task.extensions.temperature.value).toBe(-2.3);
+            expect(task.extensions.weight.value).toBe(0.75);
+            expect(typeof task.extensions.rating.value).toBe("number");
+            expect(typeof task.extensions.temperature.value).toBe("number");
+            expect(typeof task.extensions.weight.value).toBe("number");
         });
 
-        test("should handle mixed numeric types", () => {
-            const task = parser.parseLine("Task int:42 float:3.14 text:hello date:2023-10-25");
-            expect(task.extensions.int).toBe(42);
-            expect(task.extensions.float).toBe(3.14);
-            expect(task.extensions.text).toBe("hello");
-            expect(task.extensions.date).toEqual(new Date(Date.UTC(2023, 9, 25)));
+        test("should parse booleans by default", () => {
+            const task = parser.parseLine("Task true:true false:false yes:yes no:no y:y n:n on:on off:off");
+            expect(task.extensions.true.value).toBe(true);
+            expect(task.extensions.false.value).toBe(false);
+            expect(task.extensions.yes.value).toBe(true);
+            expect(task.extensions.no.value).toBe(false);
+            expect(task.extensions.y.value).toBe(true);
+            expect(task.extensions.n.value).toBe(false);
+            expect(task.extensions.on.value).toBe(true);
+            expect(task.extensions.off.value).toBe(false);
+            expect(typeof task.extensions.true.value).toBe("boolean");
+            expect(typeof task.extensions.false.value).toBe("boolean");
+            expect(typeof task.extensions.yes.value).toBe("boolean");
+            expect(typeof task.extensions.no.value).toBe("boolean");
+            expect(typeof task.extensions.y.value).toBe("boolean");
+            expect(typeof task.extensions.n.value).toBe("boolean");
+            expect(typeof task.extensions.on.value).toBe("boolean");
+            expect(typeof task.extensions.off.value).toBe("boolean");
+        });
+
+        test("should parse dates by default", () => {
+            const task = parser.parseLine("Task due:2023-10-25 start:2023-01-01 end:2023-12-31");
+            expect(task.extensions.due.value).toEqual(new Date(Date.UTC(2023, 9, 25)));
+            expect(task.extensions.start.value).toEqual(new Date(Date.UTC(2023, 0, 1)));
+            expect(task.extensions.end.value).toEqual(new Date(Date.UTC(2023, 11, 31)));
+            expect(task.extensions.due.value instanceof Date).toBe(true);
+            expect(task.extensions.start.value instanceof Date).toBe(true);
+            expect(task.extensions.end.value instanceof Date).toBe(true);
+        });
+
+        test("should parse lists by default", () => {
+            const task = parser.parseLine("Task tags:home,work,urgent numbers:1,2,3 letters:a,b,c");
+            expect(Array.isArray(task.extensions.tags.value)).toBe(true);
+            expect(task.extensions.tags.value.map((item: ExtensionValue) => item.value)).toEqual([
+                "home",
+                "work",
+                "urgent",
+            ]);
+            expect(Array.isArray(task.extensions.numbers.value)).toBe(true);
+            expect(task.extensions.numbers.value.map((item: ExtensionValue) => item.value)).toEqual([1, 2, 3]);
+            expect(Array.isArray(task.extensions.letters.value)).toBe(true);
+            expect(task.extensions.letters.value.map((item: ExtensionValue) => item.value)).toEqual(["a", "b", "c"]);
         });
     });
 
@@ -151,7 +196,7 @@ Another task`;
             const tasks = customParser.parseFile(content);
             const child = tasks[0].subtasks[0];
 
-            expect(child.extensions.due).toEqual(new Date(Date.UTC(2023, 9, 25)));
+            expect(child.extensions.due.value).toEqual(new Date(Date.UTC(2023, 9, 25)));
         });
 
         test("should not inherit extensions when inherit=false", () => {
@@ -186,7 +231,7 @@ Another task`;
             const tasks = customParser.parseFile(content);
             const child = tasks[0].subtasks[0];
 
-            expect(child.extensions.due).toEqual(new Date(Date.UTC(2023, 9, 24)));
+            expect(child.extensions.due.value).toEqual(new Date(Date.UTC(2023, 9, 24)));
         });
 
         test("should merge values when shadow=false", () => {
@@ -204,7 +249,10 @@ Another task`;
             const tasks = customParser.parseFile(content);
             const child = tasks[0].subtasks[0];
 
-            expect(child.extensions.tags).toEqual(["cooking", "cookie"]);
+            expect(child.extensions.tags.value.map((item: ExtensionValue) => item.value)).toEqual([
+                "cooking",
+                "cookie",
+            ]);
         });
     });
 });

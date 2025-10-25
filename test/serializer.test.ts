@@ -1,5 +1,5 @@
 import { TodoTxtParser, TodoTxtSerializer, ExtensionHandler } from "../src/index";
-import { Serializable } from "../src/types";
+import { ExtensionValue, NumberExtension } from "../src/types";
 
 describe("TodoTxtSerializer", () => {
     let parser: TodoTxtParser;
@@ -45,13 +45,16 @@ describe("TodoTxtSerializer", () => {
     test("should serialize extensions with custom serializer", () => {
         extensionHandler.addExtension({
             key: "estimate",
-            parsingFunction: (value: string): number => {
+            parsingFunction: (value: string): NumberExtension => {
+                let numValue: number;
                 if (value.endsWith("h")) {
-                    return parseInt(value.slice(0, -1));
+                    numValue = parseInt(value.slice(0, -1));
+                } else {
+                    numValue = parseInt(value);
                 }
-                return parseInt(value);
+                return new NumberExtension(numValue);
             },
-            serializingFunction: (value: Serializable) => `${value}h`,
+            serializingFunction: (value: ExtensionValue) => `${value}h`,
             inherit: false,
         });
 

@@ -11,6 +11,7 @@ import {
 import { ExtensionHandler } from "../src/extension-handler";
 import { TodoTxtParser } from "../src/parser";
 import { TodoTxtSerializer } from "../src/serializer";
+import { StringExtension } from "../src/types";
 
 describe("Custom Error Handling", () => {
     describe("TodoTxtError", () => {
@@ -96,7 +97,7 @@ describe("Custom Error Handling", () => {
         });
 
         test("should throw ExtensionError for duplicate extension key", () => {
-            const extension = { key: "test", parsingFunction: (v: string) => v };
+            const extension = { key: "test" };
             extensionHandler.addExtension(extension);
             expect(() => extensionHandler.addExtension(extension)).toThrow(ExtensionError);
         });
@@ -135,7 +136,9 @@ describe("Custom Error Handling", () => {
                 },
             };
             extensionHandler.addExtension(extension);
-            expect(() => extensionHandler.serializeExtensions({ test: "value" })).toThrow(ExtensionError);
+            expect(() => extensionHandler.serializeExtensions({ test: new StringExtension("value") })).toThrow(
+                ExtensionError,
+            );
         });
     });
 
