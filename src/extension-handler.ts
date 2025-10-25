@@ -1,5 +1,15 @@
 import { ExtensionError, ValidationError } from "./errors";
-import { TodoTxtExtension, TaskExtensions, Task, Serializable } from "./types";
+import {
+    TodoTxtExtension,
+    TaskExtensions,
+    Task,
+    ExtensionValue,
+    DateExtension,
+    ArrayExtension,
+    NumberExtension,
+    StringExtension,
+    BooleanExtension,
+} from "./types";
 import { ListUtils, DateUtils } from "./utils";
 
 export class ExtensionHandler {
@@ -81,7 +91,7 @@ export class ExtensionHandler {
             const [, key, value] = match;
             const extension = this.getExtension(key);
 
-            let parsedValue: Serializable;
+            let parsedValue: ExtensionValue;
             try {
                 parsedValue = extension?.parsingFunction
                     ? extension.parsingFunction(value)
@@ -102,13 +112,13 @@ export class ExtensionHandler {
                             const mergedList = [...parentList, ...currentList].filter(
                                 (item, index, self) => self.indexOf(item) === index,
                             );
-                            extensions[key] = mergedList.length === 1 ? mergedList[0] : mergedList;
+                            extensions[key] = mergedList.length === 1 ? mergedList[0] : new ArrayExtension(mergedList);
                         } else {
                             // Both are single values, create list
                             const mergedList = [parentValue, parsedValue].filter(
                                 (item, index, self) => self.indexOf(item) === index,
                             );
-                            extensions[key] = mergedList.length === 1 ? mergedList[0] : mergedList;
+                            extensions[key] = mergedList.length === 1 ? mergedList[0] : new ArrayExtension(mergedList);
                         }
                     } else {
                         // No parent value, just use current
@@ -153,47 +163,66 @@ export class ExtensionHandler {
         return parts;
     }
 
-    private parseValueByType(value: string): Serializable {
+    private parseValueByType(value: string, listable = true): ExtensionValue {
+        if (
+            (value.startsWith("(") && value.endsWith(")")) ||
+            (value.startsWith("[") && value.endsWith("]")) ||
+            (value.startsWith("{") && value.endsWith("}"))
+        ) {
+            const inner = value.slice(1, -1).trim();
+            return this.parseValueByType(inner);
+        }
+
+        if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+            const inner = value.slice(1, -1);
+            return new StringExtension(inner);
+        }
+
+        if (listable && value.includes(",")) {
+            const parts = value.split(",").map((v) => this.parseValueByType(v.trim(), false));
+            return new ArrayExtension(parts);
+        }
+
         if (DateUtils.isDate(value)) {
-            return DateUtils.parseDate(value);
+            return new DateExtension(DateUtils.parseDate(value));
         }
 
         const lower = value.toLowerCase();
         if (lower === "true" || lower === "false") {
-            return lower === "true";
+            return new BooleanExtension(lower === "true");
         }
         if (lower === "yes" || lower === "no") {
-            return lower === "yes";
+            return new BooleanExtension(lower === "yes");
         }
         if (lower === "y" || lower === "n") {
-            return lower === "y";
+            return new BooleanExtension(lower === "y");
         }
         if (lower === "on" || lower === "off") {
-            return lower === "on";
+            return new BooleanExtension(lower === "on");
         }
 
-        if (/^-?\d+$/.test(value)) {
-            return parseInt(value, 10);
+        const num = parseFloat(value);
+        if (!isNaN(num)) {
+            return new NumberExtension(num);
         }
 
-        if (/^-?\d*\.\d+$/.test(value)) {
-            return parseFloat(value);
-        }
-
-        if (value.includes(",")) {
-            return ListUtils.parseList(value);
-        }
-
-        return value;
+        return new StringExtension(value);
     }
 
-    private serializeValueByType(value: Serializable): string {
-        if (value instanceof Date) {
-            return DateUtils.formatDate(value);
+    private serializeValueByType(value: ExtensionValue): string {
+        if (Array.isArray(value) || value instanceof ArrayExtension) {
+            if (value instanceof ArrayExtension) {
+                return ListUtils.serializeList(value.value.map((v) => v.toString()));
+            }
+            return ListUtils.serializeList(value.map((v) => v.toString()));
         }
 
-        if (Array.isArray(value)) {
-            return ListUtils.serializeList(value);
+        if (value instanceof String && value.includes(" ")) {
+            return `"${value.toString()}"`;
+        }
+
+        if (value instanceof Date) {
+            return DateUtils.formatDate(value);
         }
 
         return value.toString();

@@ -22,9 +22,34 @@ import {
     TaskExtensions,
     TodoOptions,
     SaveOptions,
+    ExtensionValue,
+    DateExtension,
+    ArrayExtension,
+    NumberExtension,
+    StringExtension,
+    BooleanExtension,
+    ParseOptions,
 } from "./types";
 
-export { Priority, TaskFilter, TaskSorter, Task, TodoTxtExtension, TaskExtensions, TodoOptions, SaveOptions };
+export {
+    Priority,
+    TaskFilter,
+    TaskSorter,
+    Task,
+    TodoTxtExtension,
+    TaskExtensions,
+    TodoOptions,
+    SaveOptions,
+    ExtensionValue,
+    DateExtension,
+    ArrayExtension,
+    NumberExtension,
+    StringExtension,
+    BooleanExtension,
+    ParseOptions,
+};
+export { TaskFilters } from "./filters";
+export { TaskSorts, SortDirection } from "./sorts";
 export { ExtensionHandler };
 export { TaskBuilder };
 export { TodoTxtParser };

@@ -1,3 +1,4 @@
+import { ExtensionError } from "./errors";
 import { ExtensionHandler } from "./extension-handler";
 
 export type Priority =
@@ -28,11 +29,112 @@ export type Priority =
     | "Y"
     | "Z";
 
-export interface Serializable {
+export interface ExtensionValue {
     toString(): string;
+    equals(other: ExtensionValue): boolean;
+    compareTo(other: ExtensionValue): number;
+    value: any; //eslint-disable-line @typescript-eslint/no-explicit-any
 }
 
-export interface TodoTxtExtension<T extends Serializable = Serializable> {
+export class DateExtension implements ExtensionValue {
+    constructor(public value: Date) {}
+
+    toString(): string {
+        return this.value.toISOString().split("T")[0];
+    }
+
+    equals(other: ExtensionValue): boolean {
+        if (!(other instanceof DateExtension)) {
+            return false;
+        }
+        return this === other;
+    }
+
+    compareTo(other: ExtensionValue): number {
+        if (!(other instanceof DateExtension)) {
+            throw new ExtensionError("Cannot compare DateExtension with non-DateExtension", "");
+        }
+        return this.value.getTime() - new Date(other.toString()).getTime();
+    }
+}
+
+export class BooleanExtension implements ExtensionValue {
+    constructor(public value: boolean) {}
+
+    toString(): string {
+        return this.value.toString();
+    }
+
+    equals(other: ExtensionValue): boolean {
+        if (!(other instanceof BooleanExtension)) {
+            return false;
+        }
+        return this === other;
+    }
+
+    compareTo(other: ExtensionValue): number {
+        if (!(other instanceof BooleanExtension)) {
+            throw new ExtensionError("Cannot compare BooleanExtension with non-BooleanExtension", "");
+        }
+        return Number(this) - Number(other);
+    }
+}
+
+export class NumberExtension implements ExtensionValue {
+    constructor(public value: number) {}
+
+    toString(): string {
+        return this.value.toString();
+    }
+
+    equals(other: ExtensionValue): boolean {
+        if (!(other instanceof NumberExtension)) {
+            return false;
+        }
+        return this === other;
+    }
+
+    compareTo(other: ExtensionValue): number {
+        if (!(other instanceof NumberExtension)) {
+            throw new ExtensionError("Cannot compare NumberExtension with non-NumberExtension", "");
+        }
+        return this.value - other.value;
+    }
+}
+
+export class StringExtension implements ExtensionValue {
+    constructor(public value: string) {}
+
+    toString(): string {
+        return this.value;
+    }
+
+    equals(other: ExtensionValue): boolean {
+        return this.toString() === other.toString();
+    }
+
+    compareTo(other: ExtensionValue): number {
+        return this.toString().localeCompare(other.toString());
+    }
+}
+
+export class ArrayExtension implements ExtensionValue {
+    constructor(public value: ExtensionValue[]) {}
+
+    toString(): string {
+        return this.value.map((v) => v.toString()).join(",");
+    }
+
+    equals(other: ExtensionValue): boolean {
+        return this.toString() === other.toString();
+    }
+
+    compareTo(other: ExtensionValue): number {
+        return this.toString().localeCompare(other.toString());
+    }
+}
+
+export interface TodoTxtExtension<T extends ExtensionValue = ExtensionValue> {
     key: string;
     parsingFunction?: (value: string) => T;
     serializingFunction?: (value: T) => string;
@@ -40,7 +142,7 @@ export interface TodoTxtExtension<T extends Serializable = Serializable> {
     shadow?: boolean;
 }
 
-export type TaskExtensions = Record<string, Serializable>;
+export type TaskExtensions = Record<string, ExtensionValue>;
 
 export interface Task {
     raw: string;
