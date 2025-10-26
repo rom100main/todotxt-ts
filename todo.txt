@@ -2,16 +2,16 @@ x (A) Helpers function
     x File field (optinal)
     x Auto save field (default = false)
     x List (can take a filter or a sort)
-    x Add task(s)
+    Add task(s) (incorrect dont respect tree structure)
+    Insert tasks
     x Mark task(s) as complete
     x Unmark task(s) as complete
-    x Remove task(s)
-    Update task(s) (wrong typing should be (number, Partial<Task>)[])
+    Remove task(s) (to check)
+    Update task(s) (wrong typing should be {index:number, values:Partial<Task>}[])
     x Save to file
     x Load from file
     x Pre build filters
     x Pre build sorts
-    Insert tasks
     Tests
         Filter subtasks
         Sort subtasks
