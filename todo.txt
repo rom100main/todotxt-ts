@@ -6,22 +6,16 @@ x (A) Helpers function
     x Mark task(s) as complete
     x Unmark task(s) as complete
     x Remove task(s)
-    x Update task(s)
+    Update task(s) (wrong typing should be (number, Partial<Task>)[])
     x Save to file
     x Load from file
-    Pre build filters
-        by context
-        by project
-        by priority
-        by completion status
-        by extension field
-    Pre build sorts
-        by context
-        by project
-        by date created
-        by date completed
-        by priority
-        by extension field
+    x Pre build filters
+    x Pre build sorts
+    Insert tasks
+    Tests
+        Filter subtasks
+        Sort subtasks
+        Add subtasks
 (B) Docs
     (A) Contributing
     (B) Changelog
