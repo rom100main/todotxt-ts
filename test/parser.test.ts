@@ -179,6 +179,24 @@ Another task`;
             expect(Array.isArray(task.extensions.letters.value)).toBe(true);
             expect(task.extensions.letters.value.map((item: ExtensionValue) => item.value)).toEqual(["a", "b", "c"]);
         });
+
+        test("should parse tuples by default", () => {
+            const task = parser.parseLine("Task wrapped:(1) wrapped2:[2] wrapped3:{3}");
+            expect(task.extensions.wrapped.value).toBe(1);
+            expect(task.extensions.wrapped2.value).toBe(2);
+            expect(task.extensions.wrapped3.value).toBe(3);
+            expect(typeof task.extensions.wrapped.value).toEqual("number");
+            expect(typeof task.extensions.wrapped2.value).toEqual("number");
+            expect(typeof task.extensions.wrapped3.value).toEqual("number");
+        });
+
+        test("should parse quoted strings as strings", () => {
+            const task = parser.parseLine(`Task dquote:"string" quote:'string'`);
+            expect(task.extensions.dquote.value).toBe("string");
+            expect(task.extensions.quote.value).toBe("string");
+            expect(typeof task.extensions.dquote.value).toBe("string");
+            expect(typeof task.extensions.quote.value).toBe("string");
+        });
     });
 
     describe("Extension inheritance", () => {
