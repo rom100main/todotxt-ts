@@ -62,7 +62,8 @@ export class TodoTxt {
     private extensionHandler: ExtensionHandler;
     private tasks: Task[] = [];
     private filePath?: string;
-    private autoSave: boolean;
+    private autoSave = false;
+    private handleSubtasks = true;
 
     constructor(options?: TodoOptions) {
         this.extensionHandler = new ExtensionHandler(options?.extensions);
@@ -73,6 +74,7 @@ export class TodoTxt {
         this.serializer = new TodoTxtSerializer(this.extensionHandler);
         this.filePath = options?.filePath;
         this.autoSave = options?.autoSave ?? false;
+        this.handleSubtasks = options?.handleSubtasks ?? true;
     }
 
     private flattenTasks(tasks: Task[]): Task[] {
@@ -88,7 +90,24 @@ export class TodoTxt {
 
     private findTasksByNumbers(numbers: number[]): Task[] {
         const flatTasks = this.flattenTasks(this.tasks);
-        return numbers.filter((n) => n >= 1 && n <= flatTasks.length).map((n) => flatTasks[n - 1]);
+        const result: Task[] = [];
+
+        for (const original of numbers) {
+            let n = original;
+            if (n < 0) {
+                n = flatTasks.length + n + 1;
+            }
+
+            if (n < 1 || n > flatTasks.length) {
+                throw new TodoTxtError(
+                    `Index out of bounds: ${original}. Valid range is 1..${flatTasks.length} or -${flatTasks.length}..-1`,
+                );
+            }
+
+            result.push(flatTasks[n - 1]);
+        }
+
+        return result;
     }
 
     private async saveIfNeeded(): Promise<void> {
@@ -111,12 +130,74 @@ export class TodoTxt {
         return flatTasks;
     }
 
-    async add(taskInputs: string | string[]): Promise<void> {
+    async add(taskInputs: string | string[] | Task | Task[]): Promise<void> {
         const inputs = Array.isArray(taskInputs) ? taskInputs : [taskInputs];
+        const tasks = inputs.map((input) => (typeof input === "string" ? this.parser.parseLine(input) : input));
 
-        for (const input of inputs) {
-            const task = this.parser.parseLine(input);
-            this.tasks.push(task);
+        if (this.handleSubtasks) {
+            this.addTasksWithSubtasks(tasks);
+        } else {
+            tasks.forEach((task) => this.tasks.push(task));
+        }
+
+        await this.saveIfNeeded();
+    }
+
+    private addTasksWithSubtasks(tasks: Task[]): void {
+        const stack: Task[] = [];
+
+        for (const task of tasks) {
+            if (stack.length === 0) {
+                this.tasks.push(task);
+                stack.push(task);
+                continue;
+            }
+
+            let parentFound = false;
+
+            for (let i = stack.length - 1; i >= 0; i--) {
+                if (task.indentLevel > stack[i].indentLevel) {
+                    const parent = stack[i];
+                    task.parent = parent;
+                    parent.subtasks.push(task);
+                    stack.splice(i + 1);
+                    stack.push(task);
+                    parentFound = true;
+                    break;
+                }
+            }
+
+            if (!parentFound) {
+                this.tasks.push(task);
+                stack.splice(0);
+                stack.push(task);
+            }
+        }
+    }
+
+    async insert(index: number, taskInput: string | Task): Promise<void> {
+        const task = typeof taskInput === "string" ? this.parser.parseLine(taskInput) : taskInput;
+
+        const flatTasks = this.flattenTasks(this.tasks);
+
+        if (index < 0) {
+            index = flatTasks.length + index + 1;
+        }
+        if (index < 0) {
+            index = 0;
+        }
+
+        if (index >= flatTasks.length) {
+            this.add(task);
+        } else if (this.handleSubtasks) {
+            // Get the raw strings of all tasks and insert the new one
+            const allRawTasks = flatTasks.map((t) => t.raw);
+            allRawTasks.splice(index, 0, task.raw);
+
+            // Re-parse everything to rebuild the tree structure correctly
+            this.tasks = this.parser.parseFile(allRawTasks.join("\n"));
+        } else {
+            this.tasks.splice(index, 0, task);
         }
 
         await this.saveIfNeeded();
@@ -169,12 +250,25 @@ export class TodoTxt {
         await this.saveIfNeeded();
     }
 
-    async update(numbers: number | number[], updates: Partial<Task>): Promise<void> {
-        const nums = Array.isArray(numbers) ? numbers : [numbers];
-        const tasks = this.findTasksByNumbers(nums);
-
-        for (const task of tasks) {
-            Object.assign(task, updates);
+    async update(
+        indexOrUpdates: number | { index: number; values: Partial<Task> }[],
+        values?: Partial<Task>,
+    ): Promise<void> {
+        if (typeof indexOrUpdates === "number") {
+            if (!values) {
+                throw new TodoTxtError("Values parameter is required when using index number");
+            }
+            const task = this.findTasksByNumbers([indexOrUpdates])[0];
+            if (task) {
+                Object.assign(task, values);
+            }
+        } else {
+            for (const { index, values: updateValues } of indexOrUpdates) {
+                const task = this.findTasksByNumbers([index])[0];
+                if (task) {
+                    Object.assign(task, updateValues);
+                }
+            }
         }
 
         await this.saveIfNeeded();
@@ -183,7 +277,7 @@ export class TodoTxt {
     async save(filePath?: string): Promise<void> {
         const targetPath = filePath || this.filePath;
         if (!targetPath) {
-            throw new Error("No file path specified");
+            throw new TodoTxtError("No file path specified");
         }
 
         const content = this.serializer.serializeTasks(this.tasks);
@@ -197,7 +291,7 @@ export class TodoTxt {
     async load(filePath?: string): Promise<void> {
         const targetPath = filePath || this.filePath;
         if (!targetPath) {
-            throw new Error("No file path specified");
+            throw new TodoTxtError("No file path specified");
         }
 
         const content = await fs.promises.readFile(targetPath, "utf8");
