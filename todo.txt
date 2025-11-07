@@ -16,7 +16,7 @@ x (A) Helpers function
     Tests
         Don't handle subtasks
         x Errors index
-        Test negative index
+        x Test negative index
 (B) Docs
     (A) Contributing
     (B) Changelog
