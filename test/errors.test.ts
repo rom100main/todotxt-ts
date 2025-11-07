@@ -9,6 +9,7 @@ import {
     PriorityError,
 } from "../src/errors";
 import { ExtensionHandler } from "../src/extension-handler";
+import { TodoTxt } from "../src/index";
 import { TodoTxtParser } from "../src/parser";
 import { TodoTxtSerializer } from "../src/serializer";
 import { StringExtension } from "../src/types";
@@ -290,6 +291,75 @@ describe("Custom Error Handling", () => {
             expect(error.priority).toBe("AA");
             expect(error.code).toBe("PRIORITY_ERROR");
             expect(error.name).toBe("PriorityError");
+        });
+    });
+
+    describe("Index Out of Bounds Errors", () => {
+        let todoTxt: TodoTxt;
+
+        beforeEach(() => {
+            todoTxt = new TodoTxt();
+        });
+
+        test("should throw TodoTxtError when removing task with index out of bounds (positive)", async () => {
+            await todoTxt.add(["Task 1", "Task 2", "Task 3"]);
+
+            expect(async () => await todoTxt.remove(5)).rejects.toThrow(TodoTxtError);
+            expect(async () => await todoTxt.remove(5)).rejects.toThrow(
+                "Index out of bounds: 5. Valid range is 0..2 or -3..-1",
+            );
+        });
+
+        test("should throw TodoTxtError when removing task with index out of bounds (negative)", async () => {
+            await todoTxt.add(["Task 1", "Task 2", "Task 3"]);
+
+            expect(async () => await todoTxt.remove(-5)).rejects.toThrow(TodoTxtError);
+            expect(async () => await todoTxt.remove(-5)).rejects.toThrow(
+                "Index out of bounds: -5. Valid range is 0..2 or -3..-1",
+            );
+        });
+
+        test("should throw TodoTxtError when removing multiple tasks with some indices out of bounds", async () => {
+            await todoTxt.add(["Task 1", "Task 2", "Task 3"]);
+
+            expect(async () => await todoTxt.remove([0, 5, -1])).rejects.toThrow(TodoTxtError);
+            expect(async () => await todoTxt.remove([0, 5, -1])).rejects.toThrow(
+                "Index out of bounds: 5. Valid range is 0..2 or -3..-1",
+            );
+        });
+
+        test("should throw TodoTxtError when removing from empty todo list", async () => {
+            expect(async () => await todoTxt.remove(0)).rejects.toThrow(TodoTxtError);
+            expect(async () => await todoTxt.remove(0)).rejects.toThrow(
+                "Index out of bounds: 0. Valid range is 0..-1 or -0..-1",
+            );
+        });
+
+        test("should throw TodoTxtError when marking task with index out of bounds", async () => {
+            await todoTxt.add(["Task 1", "Task 2"]);
+
+            expect(async () => await todoTxt.mark(3)).rejects.toThrow(TodoTxtError);
+            expect(async () => await todoTxt.mark(3)).rejects.toThrow(
+                "Index out of bounds: 3. Valid range is 0..1 or -2..-1",
+            );
+        });
+
+        test("should throw TodoTxtError when unmarking task with index out of bounds", async () => {
+            await todoTxt.add(["Task 1", "Task 2"]);
+
+            expect(async () => await todoTxt.unmark(-3)).rejects.toThrow(TodoTxtError);
+            expect(async () => await todoTxt.unmark(-3)).rejects.toThrow(
+                "Index out of bounds: -3. Valid range is 0..1 or -2..-1",
+            );
+        });
+
+        test("should throw TodoTxtError when updating task with index out of bounds", async () => {
+            await todoTxt.add(["Task 1", "Task 2"]);
+
+            expect(async () => await todoTxt.update(2, { description: "Updated" })).rejects.toThrow(TodoTxtError);
+            expect(async () => await todoTxt.update(2, { description: "Updated" })).rejects.toThrow(
+                "Index out of bounds: 2. Valid range is 0..1 or -2..-1",
+            );
         });
     });
 });
