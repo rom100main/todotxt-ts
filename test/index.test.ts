@@ -110,14 +110,14 @@ describe("TodoTxt", () => {
         });
 
         test("should mark a single task as completed", async () => {
-            await todoTxt.mark(1);
+            await todoTxt.mark(0);
             const tasks = todoTxt.list();
             expect(tasks[0].completed).toBe(true);
             expect(tasks[0].completionDate).toBeInstanceOf(Date);
         });
 
         test("should mark multiple tasks as completed", async () => {
-            await todoTxt.mark([1, 3]);
+            await todoTxt.mark([0, 2]);
             const tasks = todoTxt.list();
             expect(tasks[0].completed).toBe(true);
             expect(tasks[2].completed).toBe(true);
@@ -131,14 +131,14 @@ describe("TodoTxt", () => {
         });
 
         test("should unmark a single task", async () => {
-            await todoTxt.unmark(1);
+            await todoTxt.unmark(0);
             const tasks = todoTxt.list();
             expect(tasks[0].completed).toBe(false);
             expect(tasks[0].completionDate).toBeUndefined();
         });
 
         test("should unmark multiple tasks", async () => {
-            await todoTxt.unmark([1, 2]);
+            await todoTxt.unmark([0, 1]);
             const tasks = todoTxt.list();
             expect(tasks[0].completed).toBe(false);
             expect(tasks[1].completed).toBe(false);
@@ -152,14 +152,14 @@ describe("TodoTxt", () => {
         });
 
         test("should remove a single task", async () => {
-            await todoTxt.remove(2);
+            await todoTxt.remove(1);
             const tasks = todoTxt.list();
             expect(tasks).toHaveLength(2);
             expect(tasks.map((t) => t.description)).toEqual(["Task 1", "Task 3"]);
         });
 
         test("should remove multiple tasks", async () => {
-            await todoTxt.remove([1, 3]);
+            await todoTxt.remove([0, 2]);
             const tasks = todoTxt.list();
             expect(tasks).toHaveLength(1);
             expect(tasks[0].description).toBe("Task 2");
@@ -167,7 +167,7 @@ describe("TodoTxt", () => {
 
         test("should remove task with subtasks", async () => {
             await todoTxt.add(["Parent task", "    Child task 1", "    Child task 2"]);
-            await todoTxt.remove(2);
+            await todoTxt.remove(1);
             const tasks = todoTxt.list();
             const parentTask = tasks.find((t) => t.description === "Parent task");
             expect(parentTask?.subtasks).toHaveLength(1);
@@ -177,7 +177,7 @@ describe("TodoTxt", () => {
 
         test("should remove all subtasks if parent task is removed", async () => {
             await todoTxt.add(["Parent task", "    Child task 1", "    Child task 2"]);
-            await todoTxt.remove(1);
+            await todoTxt.remove(0);
             const tasks = todoTxt.list();
             expect(tasks).toHaveLength(0);
         });
@@ -189,15 +189,15 @@ describe("TodoTxt", () => {
         });
 
         test("should update a single task", async () => {
-            await todoTxt.update(1, { description: "Updated task 1" });
+            await todoTxt.update(0, { description: "Updated task 1" });
             const tasks = todoTxt.list();
             expect(tasks[0].description).toBe("Updated task 1");
         });
 
         test("should update multiple tasks", async () => {
             await todoTxt.update([
-                { index: 1, values: { priority: "A" } },
-                { index: 3, values: { priority: "A" } },
+                { index: 0, values: { priority: "A" } },
+                { index: 2, values: { priority: "A" } },
             ]);
             const tasks = todoTxt.list();
             expect(tasks[0].priority).toBe("A");
@@ -206,7 +206,7 @@ describe("TodoTxt", () => {
         });
 
         test("should update multiple properties", async () => {
-            await todoTxt.update(2, {
+            await todoTxt.update(1, {
                 priority: "B",
                 description: "Updated task 2",
                 completed: true,
@@ -221,14 +221,14 @@ describe("TodoTxt", () => {
     describe("insert", () => {
         test("should insert task at specific index", async () => {
             await todoTxt.add(["Task1", "Task2", "Task3"]);
-            await todoTxt.insert(1, "Task1_1");
+            await todoTxt.insert(0, "Task1_1");
             const tasks = todoTxt.list();
             expect(tasks.map((t) => t.description)).toEqual(["Task1", "Task1_1", "Task2", "Task3"]);
         });
 
         test("should handle subtask insertion", async () => {
             await todoTxt.add(["Task1", "Task2"]);
-            await todoTxt.insert(1, "    Inserted Task");
+            await todoTxt.insert(0, "    Inserted Task");
             const tasks = todoTxt.list();
             const task1 = tasks.find((t) => t.description === "Task1");
             expect(task1?.subtasks[0].description).toBe("Inserted Task");
@@ -236,7 +236,7 @@ describe("TodoTxt", () => {
 
         test("should handle subtask insertion and reparenting", async () => {
             await todoTxt.add(["Task1", "    SubTask1", "Task2"]);
-            await todoTxt.insert(1, "Task1_1");
+            await todoTxt.insert(0, "Task1_1");
             const tasks = todoTxt.list();
             const task1 = tasks.find((t) => t.description === "Task1");
             const task1_1 = tasks.find((t) => t.description === "Task1_1");
@@ -353,7 +353,7 @@ describe("TodoTxt", () => {
             await todoTxt.load(testFilePath);
 
             // Should be able to mark child task by number
-            await todoTxt.mark(2);
+            await todoTxt.mark(1);
             const tasks = todoTxt.list();
             const childTask = tasks.find((t) => t.description === "Child task");
             expect(childTask?.completed).toBe(true);
