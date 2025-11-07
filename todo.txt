@@ -15,7 +15,8 @@ x (A) Helpers function
     x Index starting at 0 (instead of 1)
     Tests
         Don't handle subtasks
-        Errors index
+        x Errors index
+        Test negative index
 (B) Docs
     (A) Contributing
     (B) Changelog
