@@ -12,7 +12,7 @@ x (A) Helpers function
     x Load from file
     x Pre build filters
     x Pre build sorts
-    Index starting at 0 (instead of 1)
+    x Index starting at 0 (instead of 1)
     Tests
         Don't handle subtasks
         Errors index
