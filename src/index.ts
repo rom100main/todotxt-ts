@@ -95,16 +95,16 @@ export class TodoTxt {
         for (const original of numbers) {
             let n = original;
             if (n < 0) {
-                n = flatTasks.length + n + 1;
+                n = flatTasks.length + n;
             }
 
-            if (n < 1 || n > flatTasks.length) {
+            if (n < 0 || n >= flatTasks.length) {
                 throw new TodoTxtError(
-                    `Index out of bounds: ${original}. Valid range is 1..${flatTasks.length} or -${flatTasks.length}..-1`,
+                    `Index out of bounds: ${original}. Valid range is 0..${flatTasks.length - 1} or -${flatTasks.length}..-1`,
                 );
             }
 
-            result.push(flatTasks[n - 1]);
+            result.push(flatTasks[n]);
         }
 
         return result;
@@ -181,7 +181,7 @@ export class TodoTxt {
         const flatTasks = this.flattenTasks(this.tasks);
 
         if (index < 0) {
-            index = flatTasks.length + index + 1;
+            index = flatTasks.length + index;
         }
         if (index < 0) {
             index = 0;
