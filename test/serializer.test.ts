@@ -69,7 +69,7 @@ describe("TodoTxtSerializer", () => {
     Subtask 2`;
 
         const tasks = parser.parseFile(content);
-        const serialized = serializer.serializeTasks(tasks, true, true);
+        const serialized = serializer.serializeTasks(tasks);
 
         const expected = `Main task
 Subtask 1
