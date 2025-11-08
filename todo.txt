@@ -6,17 +6,13 @@ x (A) Helpers function
     x Insert task(s)
     x Mark task(s) as complete
     x Unmark task(s) as complete
-    Remove task(s) (don't work)
+    x Remove task(s)
     x Update task(s)
     x Save to file
     x Load from file
     x Pre build filters
     x Pre build sorts
-    x Index starting at 0 (instead of 1)
-    Tests
-        Don't handle subtasks
-        x Errors index
-        x Test negative index
+    x Tests
 (B) Docs
     (A) Contributing
     (B) Changelog
