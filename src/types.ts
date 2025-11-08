@@ -173,8 +173,3 @@ export interface ParseOptions {
     extensionHandler?: ExtensionHandler;
     handleSubtasks?: boolean;
 }
-
-export interface SaveOptions {
-    includeSubtasks?: boolean;
-    preserveIndentation?: boolean;
-}

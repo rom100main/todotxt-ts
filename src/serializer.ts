@@ -10,7 +10,7 @@ export class TodoTxtSerializer {
         this.extensionHandler = extensionHandler;
     }
 
-    serializeTasks(tasks: Task[], includeSubtasks = true, preserveIndentation = true): string {
+    serializeTasks(tasks: Task[]): string {
         if (!Array.isArray(tasks)) {
             throw new ValidationError("Tasks must be an array", "tasks", tasks);
         }
@@ -20,7 +20,7 @@ export class TodoTxtSerializer {
         for (let i = 0; i < tasks.length; i++) {
             const task = tasks[i];
             try {
-                lines.push(...this.serializeTask(task, includeSubtasks, preserveIndentation));
+                lines.push(...this.serializeTask(task));
             } catch (error) {
                 const message = error instanceof Error ? error.message : String(error);
                 throw new SerializationError(`Failed to serialize task at index ${i}: ${message}`, task);
@@ -30,7 +30,7 @@ export class TodoTxtSerializer {
         return lines.join("\n");
     }
 
-    serializeTask(task: Task, includeSubtasks = true, preserveIndentation = true): string[] {
+    serializeTask(task: Task): string[] {
         if (!task || typeof task !== "object") {
             throw new ValidationError("Task must be an object", "task", task);
         }
@@ -38,18 +38,18 @@ export class TodoTxtSerializer {
         const lines: string[] = [];
 
         try {
-            const line = this.serializeSingleTask(task, preserveIndentation ? task.indentLevel : 0);
+            const line = this.serializeSingleTask(task, task.indentLevel);
             lines.push(line);
         } catch (error) {
             const message = error instanceof Error ? error.message : String(error);
             throw new SerializationError(`Failed to serialize task: ${message}`, task);
         }
 
-        if (includeSubtasks && task.subtasks && task.subtasks.length > 0) {
+        if (task.subtasks && task.subtasks.length > 0) {
             for (let i = 0; i < task.subtasks.length; i++) {
                 const subtask = task.subtasks[i];
                 try {
-                    lines.push(...this.serializeTask(subtask, includeSubtasks, preserveIndentation));
+                    lines.push(...this.serializeTask(subtask));
                 } catch (error) {
                     const message = error instanceof Error ? error.message : String(error);
                     throw new SerializationError(`Failed to serialize subtask at index ${i}: ${message}`, subtask);

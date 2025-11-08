@@ -238,26 +238,14 @@ const serializer = new TodoTxtSerializer(new ExtensionHandler());
 const line = serializer.serializeTask(task);
 
 // Serialize task array
-const content = serializer.serializeTasks(tasks, {
-    includeSubtasks: true,
-    preserveIndentation: true,
-});
+const content = serializer.serializeTasks(tasks);
 ```
 
 #### Methods
 
 ```typescript
-serializeTask(task: Task): string;                             // Convert single Task to todo.txt line
-serializeTasks(tasks: Task[], options?: SaveOptions): string;  // Convert Task array to multi-line content
-```
-
-### Save Options
-
-```typescript
-interface SaveOptions {
-    includeSubtasks?: boolean;      // Include subtasks in output (default: true)
-    preserveIndentation?: boolean;  // Keep original indentation (default: true)
-}
+serializeTask(task: Task): string;      // Convert single Task to todo.txt line
+serializeTasks(tasks: Task[]): string;  // Convert Task array to multi-line content
 ```
 
 ### Error Handling
