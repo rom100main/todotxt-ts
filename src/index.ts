@@ -61,7 +61,7 @@ export class TodoTxt {
     private serializer: TodoTxtSerializer;
     private extensionHandler: ExtensionHandler;
     private tasks: Task[] = [];
-    private filePath?: string;
+    private filePath?: string = "todo.txt";
     private autoSave = false;
     private handleSubtasks = true;
 
