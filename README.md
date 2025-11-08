@@ -5,13 +5,14 @@ A comprehensive TypeScript parser for todo.txt format files with extension suppo
 ## Features
 
 - Parse and serialize todo.txt format (priorities, dates, projects, contexts)
-- Custom key:value extensions with automatic parsing
+- Custom key:value extensions with automatic parsing and typing
 - Subtask support with indentation-based hierarchy
 - Task management utils (add, remove, update, mark/unmark)
 - Full TypeScript support
-- Property inheritance from parent to subtasks
-- Extension inheritance control (inherit, shadow)
+- Property inheritance from parent to subtasks with configurable inheritance control
+- Standalone TodoTxtParser and TodoTxtSerializer classes
 - Built-in task filters and sorting functions
+- Comprehensive error handling with specific error types
 
 ## Installation
 
@@ -147,7 +148,7 @@ When no `parsingFunction` is provided, the parser attempts automatic type detect
 - Comma-separated values -> `ArrayExtension`
 - Everything else -> `StringExtension`
 
-#### Built-in Extension Types
+#### Extension Types
 
 ```typescript
 DateExtension;     // Date values with ISO string serialization
@@ -262,27 +263,17 @@ DateError;           // Date parsing errors
 PriorityError;       // Priority validation errors
 ```
 
+## Support
+
+For bug reports and feature requests, please fill an issue at [GitHub repository](https://github.com/rom100main/todotxt-ts/issues).
+
+## Changelog
+
+See [CHANGELOG](CHANGELOG.md) for a list of changes in each version.
+
 ## Development
 
-```bash
-# Install dependencies
-npm install
-
-# Build the project
-npm run build
-
-# Run tests
-npm test
-
-# Run linting
-npm run lint
-
-# Fix linting issues
-npm run lint:fix
-
-# Watch mode for development
-npm run dev
-```
+For development information, see [CONTRIBUTING](CONTRIBUTING.md).
 
 ## License
 
