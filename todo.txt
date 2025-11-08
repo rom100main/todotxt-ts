@@ -15,7 +15,7 @@ x (A) Helpers function
     x Tests
 (B) Docs
     x (A) Contributing
-    (B) Changelog
+    x (B) Changelog
     (C) Template for issue and pull request
 (C) CI/CD pipeline trigger by tags
     (A) build project
