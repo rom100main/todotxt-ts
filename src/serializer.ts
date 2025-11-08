@@ -4,10 +4,10 @@ import { Task } from "./types";
 import { DateUtils } from "./utils";
 
 export class TodoTxtSerializer {
-    private extensionHandler: ExtensionHandler;
+    private extensionHandler = new ExtensionHandler();
 
-    constructor(extensionHandler: ExtensionHandler) {
-        this.extensionHandler = extensionHandler;
+    constructor(extensionHandler?: ExtensionHandler) {
+        this.extensionHandler = extensionHandler ?? new ExtensionHandler();
     }
 
     serializeTasks(tasks: Task[]): string {

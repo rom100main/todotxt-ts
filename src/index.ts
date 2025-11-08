@@ -55,11 +55,11 @@ export { TodoTxtSerializer };
 export { TodoTxtError, ParseError, ExtensionError, SerializationError, ValidationError, DateError, PriorityError };
 
 export class TodoTxt {
-    private parser: TodoTxtParser;
-    private serializer: TodoTxtSerializer;
-    private extensionHandler: ExtensionHandler;
+    private parser = new TodoTxtParser();
+    private serializer = new TodoTxtSerializer();
+    private extensionHandler = new ExtensionHandler();
     private tasks: Task[] = [];
-    private filePath?: string = "todo.txt";
+    private filePath = "todo.txt";
     private autoSave = false;
     private handleSubtasks = true;
 
@@ -70,7 +70,7 @@ export class TodoTxt {
             handleSubtasks: options?.handleSubtasks,
         });
         this.serializer = new TodoTxtSerializer(this.extensionHandler);
-        this.filePath = options?.filePath;
+        this.filePath = options?.filePath ?? "todo.txt";
         this.autoSave = options?.autoSave ?? false;
         this.handleSubtasks = options?.handleSubtasks ?? true;
     }

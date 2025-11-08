@@ -4,12 +4,12 @@ import { TaskBuilder } from "./task";
 import { Task, ParseOptions } from "./types";
 
 export class TodoTxtParser {
-    private extensionHandler: ExtensionHandler;
-    private handleSubtasks: boolean;
+    private extensionHandler = new ExtensionHandler();
+    private handleSubtasks = true;
 
     constructor(options?: ParseOptions) {
-        this.extensionHandler = options?.extensionHandler ? options.extensionHandler : new ExtensionHandler();
-        this.handleSubtasks = options?.handleSubtasks ? options.handleSubtasks : true;
+        this.extensionHandler = options?.extensionHandler ?? new ExtensionHandler();
+        this.handleSubtasks = options?.handleSubtasks ?? true;
     }
 
     parseFile(content: string): Task[] {
