@@ -180,6 +180,7 @@ export class TodoTxt {
 
         const flatTasks = this.flattenTasks(this.tasks);
 
+        const originalIndex = index;
         if (index < 0) {
             index = flatTasks.length + index;
         }
@@ -187,17 +188,22 @@ export class TodoTxt {
             index = 0;
         }
 
-        if (index >= flatTasks.length) {
+        if (index >= flatTasks.length || (originalIndex === -flatTasks.length && task.indentLevel === 0)) {
             this.add(task);
         } else if (this.handleSubtasks) {
-            // Get the raw strings of all tasks and insert the new one
             const allRawTasks = flatTasks.map((t) => t.raw);
-            allRawTasks.splice(index, 0, task.raw);
+            let insertIndex: number;
+            if (task.indentLevel > 0) {
+                insertIndex = index + 1;
+            } else {
+                insertIndex = originalIndex >= 0 ? index + 1 : index;
+            }
+            allRawTasks.splice(insertIndex, 0, task.raw);
 
-            // Re-parse everything to rebuild the tree structure correctly
             this.tasks = this.parser.parseFile(allRawTasks.join("\n"));
         } else {
-            this.tasks.splice(index, 0, task);
+            const insertIndex = originalIndex >= 0 ? index + 1 : index;
+            this.tasks.splice(insertIndex, 0, task);
         }
 
         await this.saveIfNeeded();
