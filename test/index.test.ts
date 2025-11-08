@@ -193,11 +193,8 @@ describe("TodoTxt", () => {
     });
 
     describe("remove", () => {
-        beforeEach(async () => {
-            await todoTxt.add(["Task 1", "Task 2", "Task 3"]);
-        });
-
         test("should remove a single task", async () => {
+            await todoTxt.add(["Task 1", "Task 2", "Task 3"]);
             await todoTxt.remove(1);
             const tasks = todoTxt.list();
             expect(tasks).toHaveLength(2);
@@ -205,6 +202,7 @@ describe("TodoTxt", () => {
         });
 
         test("should remove multiple tasks", async () => {
+            await todoTxt.add(["Task 1", "Task 2", "Task 3"]);
             await todoTxt.remove([0, 2]);
             const tasks = todoTxt.list();
             expect(tasks).toHaveLength(1);
@@ -212,6 +210,7 @@ describe("TodoTxt", () => {
         });
 
         test("should remove task using negative index", async () => {
+            await todoTxt.add(["Task 1", "Task 2", "Task 3"]);
             await todoTxt.remove(-1);
             const tasks = todoTxt.list();
             expect(tasks).toHaveLength(2);
@@ -219,6 +218,7 @@ describe("TodoTxt", () => {
         });
 
         test("should remove multiple tasks using negative indices", async () => {
+            await todoTxt.add(["Task 1", "Task 2", "Task 3"]);
             await todoTxt.remove([-1, -3]);
             const tasks = todoTxt.list();
             expect(tasks).toHaveLength(1);
@@ -226,6 +226,7 @@ describe("TodoTxt", () => {
         });
 
         test("should remove tasks using mixed positive and negative indices", async () => {
+            await todoTxt.add(["Task 1", "Task 2", "Task 3"]);
             await todoTxt.remove([0, -1]);
             const tasks = todoTxt.list();
             expect(tasks).toHaveLength(1);
