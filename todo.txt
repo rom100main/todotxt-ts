@@ -13,10 +13,10 @@ x (A) Helpers function
     x Pre build filters
     x Pre build sorts
     x Tests
-(B) Docs
+x (B) Docs
     x (A) Contributing
     x (B) Changelog
-    (C) Template for issue and pull request
+    x (C) Template for issue and pull request
 (C) CI/CD pipeline trigger by tags
     (A) build project
     (B) run tests
