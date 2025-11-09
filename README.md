@@ -1,4 +1,4 @@
-# Todo.txt TypeScript
+# TxTodo
 
 A TypeScript todo.txt parser/serializer with utils funcion, extension support and subtask handling.
 

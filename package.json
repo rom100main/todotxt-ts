@@ -1,5 +1,5 @@
 {
-    "name": "todotxt-ts",
+    "name": "txtodo",
     "version": "1.0.0",
     "description": "A TypeScript todo.txt parser/serializer with utils funcion, extension support and subtask handling",
     "keywords": [

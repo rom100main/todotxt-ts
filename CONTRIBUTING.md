@@ -1,6 +1,6 @@
-# Contributing to Todo.txt TypeScript Parser
+# Contributing
 
-We welcome contributions to the todotxt-ts parser! Here's how you can get involved:
+We welcome contributions! Here's how you can get involved:
 
 ## Getting Started
 
