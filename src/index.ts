@@ -298,8 +298,13 @@ export class TodoTxt {
             throw new TodoTxtError("No file path specified");
         }
 
-        const content = await fs.promises.readFile(targetPath, "utf8");
-        this.tasks = this.parser.parseFile(content);
+        try {
+            const content = await fs.promises.readFile(targetPath, "utf8");
+            this.tasks = this.parser.parseFile(content);
+        } catch (error) {
+            const message = error instanceof Error ? error.message : String(error);
+            throw new TodoTxtError("Failed to load file: " + message);
+        }
 
         if (!this.filePath) {
             this.filePath = targetPath;
