@@ -73,4 +73,17 @@ describe("TodoTxtSerializer", () => {
 
         expect(serialized).toBe(content);
     });
+
+    test("should serialize tasks with subtasks but no indentation", () => {
+        const content = `Main task
+Subtask 1
+Subtask 2`;
+
+        parser = new TodoTxtParser({ extensionHandler, handleSubtasks: false });
+
+        const tasks = parser.parseFile(content);
+        const serialized = serializer.serializeTasks(tasks);
+
+        expect(serialized).toBe(content);
+    });
 });
