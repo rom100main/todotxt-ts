@@ -324,6 +324,42 @@ export class TodoTxt {
         await this.saveIfNeeded();
     }
 
+    filter(filter: TaskFilter): Task[] {
+        const filterRecursive = (tasks: Task[]): Task[] => {
+            const filteredTasks: Task[] = [];
+
+            for (const task of tasks) {
+                if (filter(task)) {
+                    const filteredTask = { ...task };
+                    if (task.subtasks && task.subtasks.length > 0) {
+                        filteredTask.subtasks = filterRecursive(task.subtasks);
+                    }
+                    filteredTasks.push(filteredTask);
+                }
+            }
+
+            return filteredTasks;
+        };
+
+        return filterRecursive(this.tasks);
+    }
+
+    sort(sorter: TaskSorter): Task[] {
+        const sortRecursive = (tasks: Task[]): Task[] => {
+            const sortedTasks = [...tasks].sort(sorter);
+
+            for (const task of sortedTasks) {
+                if (task.subtasks && task.subtasks.length > 0) {
+                    task.subtasks = sortRecursive(task.subtasks);
+                }
+            }
+
+            return sortedTasks;
+        };
+
+        return sortRecursive(this.tasks);
+    }
+
     async save(filePath?: string): Promise<void> {
         const targetPath = filePath || this.filePath;
         if (!targetPath) {
