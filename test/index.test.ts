@@ -1,7 +1,7 @@
 import * as fs from "fs";
 import * as path from "path";
 
-import { TodoTxt, TaskFilters, TaskSorts } from "../src/index";
+import { TodoTxt, TaskFilters, TaskSorts, Task } from "../src/index";
 
 describe("TodoTxt", () => {
     let todoTxt: TodoTxt;
@@ -449,6 +449,144 @@ describe("TodoTxt", () => {
             // Since autoSave is private, we can't directly test it
             // but we can test that the method doesn't throw
             expect(() => todoTxt.setAutoSave(false)).not.toThrow();
+        });
+    });
+
+    describe("filter", () => {
+        beforeEach(async () => {
+            await todoTxt.add([
+                "(A) High priority task",
+                "Low priority task",
+                "x Completed task",
+                "Parent task",
+                "    Child task 1",
+                "    Child task 2",
+                "        Grandchild task",
+                "Another parent",
+                "    Another child",
+            ]);
+        });
+
+        test("should filter tasks at all levels", () => {
+            const filtered = todoTxt.filter(TaskFilters.byPriority("A"));
+
+            expect(filtered).toHaveLength(1);
+            expect(filtered[0].description).toBe("High priority task");
+        });
+
+        test("should filter completed tasks at all levels", () => {
+            const filtered = todoTxt.filter(TaskFilters.completed());
+
+            expect(filtered).toHaveLength(1);
+            expect(filtered[0].description).toBe("Completed task");
+        });
+
+        test("should filter tasks containing specific text", () => {
+            const textFilter = (task: Task) => task.description.includes("Child");
+            const filtered = todoTxt.filter(textFilter);
+
+            expect(filtered).toHaveLength(2);
+            expect(filtered[0].description).toBe("Parent task");
+            expect(filtered[0].subtasks).toHaveLength(2);
+            expect(filtered[0].subtasks[0].description).toBe("Child task 1");
+            expect(filtered[0].subtasks[1].description).toBe("Child task 2");
+            expect(filtered[0].subtasks[1].subtasks).toHaveLength(1);
+            expect(filtered[0].subtasks[1].subtasks[0].description).toBe("Grandchild task");
+
+            expect(filtered[1].description).toBe("Another parent");
+            expect(filtered[1].subtasks).toHaveLength(1);
+            expect(filtered[1].subtasks[0].description).toBe("Another child");
+        });
+
+        test("should return empty array when no tasks match filter", () => {
+            const filtered = todoTxt.filter(TaskFilters.byPriority("Z"));
+
+            expect(filtered).toHaveLength(0);
+        });
+
+        test("should preserve parent-child relationships when filtering", () => {
+            const parentFilter = (task: Task) => task.description.includes("Parent");
+            const filtered = todoTxt.filter(parentFilter);
+
+            expect(filtered).toHaveLength(2);
+
+            const parentTask = filtered[0];
+            expect(parentTask.description).toBe("Parent task");
+            expect(parentTask.subtasks).toHaveLength(2);
+            expect(parentTask.subtasks[0].description).toBe("Child task 1");
+            expect(parentTask.subtasks[1].description).toBe("Child task 2");
+            expect(parentTask.subtasks[1].subtasks[0].description).toBe("Grandchild task");
+
+            const anotherParent = filtered[1];
+            expect(anotherParent.description).toBe("Another parent");
+            expect(anotherParent.subtasks).toHaveLength(1);
+            expect(anotherParent.subtasks[0].description).toBe("Another child");
+        });
+    });
+
+    describe("sort", () => {
+        beforeEach(async () => {
+            await todoTxt.add([
+                "Z task",
+                "A task",
+                "Parent task",
+                "    C child",
+                "    A child",
+                "    B child",
+                "        Z grandchild",
+                "        A grandchild",
+                "Another parent",
+                "    B child",
+                "    A child",
+            ]);
+        });
+
+        test("should sort tasks alphabetically at all levels", () => {
+            const sorted = todoTxt.sort(TaskSorts.byDescription());
+
+            expect(sorted).toHaveLength(3);
+            expect(sorted[0].description).toBe("A task");
+            expect(sorted[1].description).toBe("Another parent");
+            expect(sorted[2].description).toBe("Parent task");
+
+            // Check subtasks are sorted
+            const anotherParent = sorted[1];
+            expect(anotherParent.subtasks.map((t) => t.description)).toEqual(["A child", "B child"]);
+
+            const parentTask = sorted[2];
+            expect(parentTask.subtasks.map((t) => t.description)).toEqual(["A child", "B child", "C child"]);
+
+            // Check grandchild is sorted
+            const bChild = parentTask.subtasks[1];
+            expect(bChild.subtasks.map((t) => t.description)).toEqual(["A grandchild", "Z grandchild"]);
+        });
+
+        test("should sort by description length at all levels", () => {
+            const lengthSorter = (a: Task, b: Task) => a.description.length - b.description.length;
+            const sorted = todoTxt.sort(lengthSorter);
+
+            expect(sorted).toHaveLength(3);
+            expect(sorted[0].description).toBe("A task");
+            expect(sorted[1].description).toBe("Z task");
+            expect(sorted[2].description).toBe("Parent task");
+
+            // Check subtasks are sorted by length
+            const parentTask = sorted[2];
+            expect(parentTask.subtasks.map((t) => t.description)).toEqual(["A child", "B child", "C child"]);
+        });
+
+        test("should maintain hierarchical structure after sorting", () => {
+            const sorted = todoTxt.sort(TaskSorts.byDescription());
+
+            // Verify parent-child relationships are maintained
+            const parentTask = sorted.find((t) => t.description === "Parent task");
+            expect(parentTask?.subtasks).toHaveLength(3);
+
+            const aChild = parentTask?.subtasks.find((t) => t.description === "A child");
+            expect(aChild?.subtasks).toHaveLength(0);
+
+            const bChild = parentTask?.subtasks.find((t) => t.description === "B child");
+            expect(bChild?.subtasks).toHaveLength(2);
         });
     });
 
