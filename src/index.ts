@@ -146,6 +146,15 @@ export class TodoTxt {
 
         for (const task of tasks) {
             if (stack.length === 0) {
+                if (task.indentLevel > 0) {
+                    const parent = this.findParentInExistingTasks(task);
+                    if (parent) {
+                        task.parent = parent;
+                        parent.subtasks.push(task);
+                        stack.push(task);
+                        continue;
+                    }
+                }
                 this.tasks.push(task);
                 stack.push(task);
                 continue;
@@ -166,11 +175,35 @@ export class TodoTxt {
             }
 
             if (!parentFound) {
-                this.tasks.push(task);
-                stack.splice(0);
-                stack.push(task);
+                // Try to find parent in existing tasks
+                const parent = this.findParentInExistingTasks(task);
+                if (parent) {
+                    task.parent = parent;
+                    parent.subtasks.push(task);
+                    stack.splice(0);
+                    stack.push(task);
+                } else {
+                    this.tasks.push(task);
+                    stack.splice(0);
+                    stack.push(task);
+                }
             }
         }
+    }
+
+    private findParentInExistingTasks(task: Task): Task | null {
+        const allTasks = this.flattenTasks(this.tasks);
+        let bestParent: Task | null = null;
+        let highestIndentLevel = -1;
+
+        for (const existingTask of allTasks) {
+            if (task.indentLevel > existingTask.indentLevel && existingTask.indentLevel > highestIndentLevel) {
+                bestParent = existingTask;
+                highestIndentLevel = existingTask.indentLevel;
+            }
+        }
+
+        return bestParent;
     }
 
     async insert(index: number, taskInput: string | Task): Promise<void> {
