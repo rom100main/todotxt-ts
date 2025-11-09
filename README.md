@@ -1,6 +1,6 @@
 # Todo.txt TypeScript Parser
 
-A comprehensive TypeScript parser for todo.txt format files with extension support and subtask handling.
+A TypeScript todo.txt parser/serializer with utils funcion, extension support and subtask handling.
 
 ## Features
 
