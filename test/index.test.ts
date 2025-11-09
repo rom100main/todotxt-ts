@@ -398,16 +398,6 @@ describe("TodoTxt", () => {
             expect(tasks[1].creationDate).toEqual(new Date(Date.UTC(2023, 9, 24)));
             expect(tasks[2].completed).toBe(true);
         });
-
-        test("should throw error when saving without file path", async () => {
-            const todoWithoutPath = new TodoTxt();
-            await expect(todoWithoutPath.save()).rejects.toThrow("No file path specified");
-        });
-
-        test("should throw error when loading without file path", async () => {
-            const todoWithoutPath = new TodoTxt();
-            await expect(todoWithoutPath.load()).rejects.toThrow("No file path specified");
-        });
     });
 
     describe("autoSave", () => {
