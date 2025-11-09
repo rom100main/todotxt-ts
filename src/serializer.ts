@@ -63,8 +63,10 @@ export class TodoTxtSerializer {
     private serializeSingleTask(task: Task, indentLevel = 0): string {
         const parts: string[] = [];
 
-        const indent = " ".repeat(indentLevel);
-        parts.push(indent);
+        if (indentLevel > 0) {
+            const indent = " ".repeat(indentLevel);
+            parts.push(indent);
+        }
 
         if (task.completed) {
             parts.push("x");
@@ -103,7 +105,14 @@ export class TodoTxtSerializer {
 
         parts.push(description.trim());
 
-        return parts.join(" ").trim();
+        let result;
+        if (parts.length > 0 && parts[0].match(/^\s+$/)) {
+            // First part is indentation, concatenate without space
+            result = parts[0] + parts.slice(1).join(" ");
+        } else {
+            result = parts.join(" ");
+        }
+        return result.trimEnd();
     }
 
     private formatDate(date: Date): string {
