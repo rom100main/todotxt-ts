@@ -143,20 +143,24 @@ export class TodoTxt {
 
     private addTasksWithSubtasks(tasks: Task[]): void {
         const stack: Task[] = [];
+        let isFirstTaskInBatch = true;
 
         for (const task of tasks) {
             if (stack.length === 0) {
-                if (task.indentLevel > 0) {
+                // For single tasks or first task in a batch with indentation, try to find parent in existing tasks
+                if (task.indentLevel > 0 && (tasks.length === 1 || isFirstTaskInBatch)) {
                     const parent = this.findParentInExistingTasks(task);
                     if (parent) {
                         task.parent = parent;
                         parent.subtasks.push(task);
                         stack.push(task);
+                        isFirstTaskInBatch = false;
                         continue;
                     }
                 }
                 this.tasks.push(task);
                 stack.push(task);
+                isFirstTaskInBatch = false;
                 continue;
             }
 
@@ -175,19 +179,26 @@ export class TodoTxt {
             }
 
             if (!parentFound) {
-                // Try to find parent in existing tasks
-                const parent = this.findParentInExistingTasks(task);
-                if (parent) {
-                    task.parent = parent;
-                    parent.subtasks.push(task);
-                    stack.splice(0);
-                    stack.push(task);
+                // Try to find parent in existing tasks for single tasks or non-first batch tasks
+                if (tasks.length === 1 || !isFirstTaskInBatch) {
+                    const parent = this.findParentInExistingTasks(task);
+                    if (parent) {
+                        task.parent = parent;
+                        parent.subtasks.push(task);
+                        stack.splice(0);
+                        stack.push(task);
+                    } else {
+                        this.tasks.push(task);
+                        stack.splice(0);
+                        stack.push(task);
+                    }
                 } else {
                     this.tasks.push(task);
                     stack.splice(0);
                     stack.push(task);
                 }
             }
+            isFirstTaskInBatch = false;
         }
     }
 
@@ -196,7 +207,9 @@ export class TodoTxt {
         let bestParent: Task | null = null;
         let highestIndentLevel = -1;
 
-        for (const existingTask of allTasks) {
+        // Look at tasks in reverse order (most recent first)
+        for (let i = allTasks.length - 1; i >= 0; i--) {
+            const existingTask = allTasks[i];
             if (task.indentLevel > existingTask.indentLevel && existingTask.indentLevel > highestIndentLevel) {
                 bestParent = existingTask;
                 highestIndentLevel = existingTask.indentLevel;
@@ -318,7 +331,7 @@ export class TodoTxt {
         }
 
         const content = this.serializer.serializeTasks(this.tasks);
-        await fs.promises.writeFile(targetPath, content, "utf8");
+        await fs.promises.writeFile(targetPath, content, "utf8"); // TODO: try catch
 
         if (!this.filePath) {
             this.filePath = targetPath;
