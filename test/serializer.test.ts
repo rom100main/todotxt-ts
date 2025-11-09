@@ -71,9 +71,6 @@ describe("TodoTxtSerializer", () => {
         const tasks = parser.parseFile(content);
         const serialized = serializer.serializeTasks(tasks);
 
-        const expected = `Main task
-Subtask 1
-Subtask 2`;
-        expect(serialized).toBe(expected);
+        expect(serialized).toBe(content);
     });
 });
