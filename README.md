@@ -7,7 +7,7 @@ A TypeScript todo.txt parser/serializer with utils funcion, extension support an
 - Parse and serialize todo.txt format (priorities, dates, projects, contexts)
 - Custom key:value extensions with automatic parsing and typing
 - Subtask support with indentation-based hierarchy
-- Task management utils (add, remove, update, mark/unmark)
+- Task management utils (add, remove, update, mark/unmark, list)
 - Full TypeScript support
 - Property inheritance from parent to subtasks with configurable inheritance control
 - Standalone TodoTxtParser and TodoTxtSerializer classes
