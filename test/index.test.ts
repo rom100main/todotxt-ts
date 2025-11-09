@@ -93,15 +93,25 @@ describe("TodoTxt", () => {
         test("should add subtask to correct parent", async () => {
             await todoTxt.add(["Parent task", "    Child task 1", "        Grandchild task", "    Child task 2"]);
             await todoTxt.add("    Child task 3");
+            await todoTxt.add(["    Child task 4", "    Child task 5"]);
+            await todoTxt.add("        Grandchild task 2");
+            await todoTxt.add("Parent task 2");
+            await todoTxt.add(["    Child task 6", "    Child task 7"]);
+            await todoTxt.add("Parent task 3");
+            await todoTxt.add(["    Child task 8"]);
 
             const tasks = todoTxt.list();
-            expect(tasks).toHaveLength(5);
-
             const parentTask = tasks.find((t) => t.description === "Parent task");
             const grandchildTask = tasks.find((t) => t.description === "Grandchild task");
+            const childTask5 = tasks.find((t) => t.description === "Child task 5");
+            const parentTask2 = tasks.find((t) => t.description === "Parent task 2");
+            const parentTask3 = tasks.find((t) => t.description === "Parent task 3");
 
-            expect(parentTask?.subtasks).toHaveLength(3);
+            expect(parentTask?.subtasks).toHaveLength(5);
             expect(grandchildTask?.parent?.description).toBe("Child task 1");
+            expect(childTask5?.subtasks).toHaveLength(1);
+            expect(parentTask2?.subtasks).toHaveLength(2);
+            expect(parentTask3?.subtasks).toHaveLength(1);
         });
     });
 
