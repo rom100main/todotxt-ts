@@ -23,36 +23,47 @@ npm install todotxt-ts
 ## Quick Start
 
 ```typescript
-import { TodoTxt, TodoTxtExtension, DateExtension } from "todotxt-ts";
+import {
+  TodoTxt,
+  NumberExtension,
+  ExtensionValue,
+  TaskFilters,
+  TaskSorts,
+} from "todotxt-ts";
 
 const todo = new TodoTxt({
-    extensions: [
-        // auto-parse extension "due" with auto-typing to date,
-        {
-            key: "estimate",
-            parsingFunction: (value: string): NumberExtension => {
-                let numValue: number;
-                if (value.endsWith("h")) {
-                    numValue = parseInt(value.slice(0, -1));
-                } else {
-                    numValue = parseInt(value);
-                }
-                return new NumberExtension(numValue);
-            },
-            serializingFunction: (value: ExtensionValue) => `${value}h`,
-            inherit: false,
-        },
-    ],
-    filePath: "todo.txt",
-    autoSave: true,
+  extensions: [
+    // auto-parse extension "due" with auto-typing to date,
+    {
+      key: "estimate",
+      parsingFunction: (value: string): NumberExtension => {
+        let numValue: number;
+        if (value.endsWith("h")) {
+          numValue = parseInt(value.slice(0, -1));
+        } else {
+          numValue = parseInt(value);
+        }
+        return new NumberExtension(numValue);
+      },
+      serializingFunction: (value: ExtensionValue) => `${value}h`,
+      inherit: false,
+    },
+  ],
+  filePath: "todo.txt",
+  handleSubtasks: true,
 });
 
 // Load existing tasks
 await todo.load();
 
 // Add new tasks
-await todo.add("(A) 2023-10-24 Call Mom +Family @phone due:2023-10-25 estimate:1h");
-await todo.add(["    Schedule follow-up call", "(B) Schedule Goodwill pickup +GarageSale @phone"]);
+await todo.add(
+  "(A) 2023-10-24 Call Mom +Family @phone due:2023-10-25 estimate:1h",
+);
+await todo.add([
+  "    Schedule follow-up call",
+  "(B) Schedule Goodwill pickup +GarageSale @phone",
+]);
 
 // List tasks with filters and sorting
 const tasks = todo.list(TaskFilters.incomplete(), TaskSorts.byPriority("ASC"));
@@ -185,7 +196,7 @@ TaskFilters.or(TaskFilters.byPriority("A"), TaskFilters.byPriority("B"));
 ### Task Sorting
 
 ```typescript
-import { TaskSorts, SortDirection } from "todotxt-ts";
+import { TaskSorts } from "todotxt-ts";
 
 // Basic sorting
 TaskSorts.byPriority("ASC");      // By priority (A-Z)
@@ -207,10 +218,7 @@ Independent parser for converting todo.txt text to Task objects. Can be used sta
 ```typescript
 import { TodoTxtParser, ExtensionHandler } from "todotxt-ts";
 
-const parser = new TodoTxtParser({
-    extensionHandler: new ExtensionHandler(),
-    handleSubtasks: true,
-});
+const parser = new TodoTxtParser();
 
 // Parse single line
 const task = parser.parseLine("(A) Call Mom +Family @phone due:2023-10-25");
@@ -233,7 +241,7 @@ Independent serializer for converting Task objects back to todo.txt format. Can 
 ```typescript
 import { TodoTxtSerializer, ExtensionHandler } from "todotxt-ts";
 
-const serializer = new TodoTxtSerializer(new ExtensionHandler());
+const serializer = new TodoTxtSerializer();
 
 // Serialize single task
 const line = serializer.serializeTask(task);
