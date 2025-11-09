@@ -7,7 +7,7 @@ A TypeScript todo.txt parser/serializer with utils funcion, extension support an
 - Parse and serialize todo.txt format (priorities, dates, projects, contexts)
 - Custom key:value extensions with automatic parsing and typing
 - Subtask support with indentation-based hierarchy
-- Task management utils (add, remove, update, mark/unmark, list)
+- Task management utils (list, add, insert, remove, mark/unmark, update, sort, filter)
 - Full TypeScript support
 - Property inheritance from parent to subtasks with configurable inheritance control
 - Standalone TodoTxtParser and TodoTxtSerializer classes
@@ -102,13 +102,15 @@ interface TodoOptions {
 ```typescript
 load(filePath?: string): Promise<void>;                             // Load tasks from file
 save(filePath?: string): Promise<void>;                             // Save tasks to file
-list(filter?: TaskFilter, sorter?: TaskSorter): Task[];             // Get filtered/sorted tasks
+list(filter?: TaskFilter, sorter?: TaskSorter): Task[];             // Get list
 add(taskInputs: string | string[] | Task | Task[]): Promise<void>;  // Add new tasks
 insert(index: number, taskInput: string | Task): Promise<void>;     // Insert task at position
 remove(numbers: number | number[]): Promise<void>;                  // Remove tasks by index
 mark(numbers: number | number[]): Promise<void>;                    // Mark tasks as complete
 unmark(numbers: number | number[]): Promise<void>;                  // Mark tasks as incomplete
 update(index: number, values: Partial<Task>): Promise<void>;        // Update task properties
+filter(filter: TaskFilter): Task[];                                 // Filter tasks
+sort(sorter: TaskSorter): Task[];                                   // Sort tasks
 setAutoSave(autoSave: boolean): void;                               // Enable/disable auto-save
 ```
 
