@@ -21,4 +21,4 @@ x (B) Docs
     (A) build project
     (B) run tests
     (C) create release
-(D) npm compliance
+x (D) npm compliance
