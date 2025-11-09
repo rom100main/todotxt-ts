@@ -331,7 +331,13 @@ export class TodoTxt {
         }
 
         const content = this.serializer.serializeTasks(this.tasks);
-        await fs.promises.writeFile(targetPath, content, "utf8"); // TODO: try catch
+
+        try {
+            await fs.promises.writeFile(targetPath, content, "utf8");
+        } catch (error) {
+            const message = error instanceof Error ? error.message : String(error);
+            throw new TodoTxtError("Failed to save file: " + message);
+        }
 
         if (!this.filePath) {
             this.filePath = targetPath;
